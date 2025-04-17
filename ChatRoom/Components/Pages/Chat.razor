@@ -1,119 +1,164 @@
 ﻿@page "/chat"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
+@using ChatRoom.Models
 @using Microsoft.AspNetCore.SignalR.Client
 @inject IJSRuntime JS
 
 <h3>Group Chat</h3>
 
 <div class="p-4">
-    <div class="border p-4 h-60 overflow-y-auto bg-gray-100 mb-4" @ref="messagesContainer">
-        @foreach (var msg in messages)
-        {
-            <div class="message @((msg.User == username ? "user-message" : "other-message"))">
-                <strong>@msg.User:</strong> <span>@msg.Text</span>
-            </div>
-        }
-    </div>
+	<div class="border p-4 h-60 overflow-y-auto bg-gray-100 mb-4" @ref="messagesContainer">
+		@foreach (var msg in messages)
+		{
+			<div class="message @((msg.User == username ? "user-message" : "other-message"))">
+				<strong>@msg.User:</strong> <span>@msg.Content</span>
+			</div>
+		}
 
-    @if (!string.IsNullOrWhiteSpace(username))
-    {
-        <div class="flex items-center gap-2">
-            <input @bind="currentMessage" @bind:event="oninput" @onkeypress="HandleKeyPress" placeholder="Type message..." class="w-full p-2 border rounded" />
-            <button @onclick="SendMessage" class="mt-2 bg-green-500 text-white px-4 py-2 rounded">Send</button>
-        </div>
-    }
-    else
-    {
-        <p class="text-gray-600 italic">You are viewing as a guest. <a href="/join" class="underline text-blue-600">Join the chat</a> to send messages.</p>
-    }
+	</div>
+
+	<div class="mt-4 p-4 border rounded bg-white">
+
+		<p class="mb-2">Controller: <strong>@(controller ?? "None")</strong></p>
+
+		@if (!string.IsNullOrWhiteSpace(username))
+		{
+
+			<div class="mt-4">
+				<label for="brightness" class="block mb-1 font-semibold">Brightness: @brightness%</label>
+				<input id="brightness" type="range" min="0" max="100" step="1"
+				@bind="brightness"
+				@oninput="OnBrightnessChanged"
+				class="w-full" />
+			</div>
+		}
+		else
+		{
+			<p class="text-sm text-gray-500 italic">Join to control the light.</p>
+		}
+	</div>
+
+
+
+	@if (!string.IsNullOrWhiteSpace(username))
+	{
+		<div class="flex items-center gap-2">
+			<input @bind="currentMessage" @bind:event="oninput" @onkeypress="HandleKeyPress" placeholder="Type message..." class="w-full p-2 border rounded" />
+			<button @onclick="SendMessage" class="mt-2 bg-green-500 text-white px-4 py-2 rounded">Send</button>
+		</div>
+	}
+	else
+	{
+		<p class="text-gray-600 italic">You are viewing as a guest. <a href="/join" class="underline text-blue-600">Join the chat</a> to send messages.</p>
+	}
 </div>
 
 @code {
-    private string username = "";
-    private string currentMessage = "";
-    private List<(string User, string Text)> messages = new();
-    private HubConnection hubConnection;
-    private ElementReference messagesContainer;
+	private string username = "";
+	private string currentMessage = "";
+	private int brightness = 100;
+	private string controller = null;
+	private List<Message> messages = new();
+	private HubConnection hubConnection;
+	private ElementReference messagesContainer;
 
-    protected override async Task OnInitializedAsync()
-    {
-        var uri = new Uri(Navigation.Uri);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        username = query["username"];
+	protected override async Task OnInitializedAsync()
+	{
+		var uri = new Uri(Navigation.Uri);
+		var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+		username = query["username"];
 
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
-            .WithAutomaticReconnect()
-            .Build();
+		hubConnection = new HubConnectionBuilder()
+			.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+			.WithAutomaticReconnect()
+			.Build();
 
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-        {
-            messages.Add((user, message));
-            InvokeAsync(StateHasChanged);
-            ScrollToBottom();
-        });
+		hubConnection.On<Message>("ReceiveMessage", (message) =>
+		{
+			messages.Add(message);
+			InvokeAsync(StateHasChanged);
+			_ = ScrollToBottom();
+		});
 
-        await hubConnection.StartAsync();
+		hubConnection.On<int, string>("BrightnessChanged", (b, user) =>
+		{
+			brightness = b;
+			controller = user;
+			InvokeAsync(StateHasChanged);
+		});
+		await hubConnection.StartAsync();
+		var b = await hubConnection.InvokeAsync<int>("GetBrightness");
+		brightness = b;
+		var history = await hubConnection.InvokeAsync<List<Message>>("GetMessageHistory");
+		messages = history;
+	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
 
-        var history = await hubConnection.InvokeAsync<List<(string User, string Text)>>("GetMessageHistory");
-        messages = history;
-        await ScrollToBottom();
-    }
+			await ScrollToBottom();
+		}
+	}
 
-    private async Task SendMessage()
-    {
-        if (!string.IsNullOrWhiteSpace(currentMessage))
-        {
-            await hubConnection.SendAsync("SendMessage", username, currentMessage);
-            currentMessage = "";
-        }
-    }
 
-    private async Task HandleKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await SendMessage();
-        }
-    }
+	private async Task SendMessage()
+	{
+		if (!string.IsNullOrWhiteSpace(currentMessage))
+		{
+			await hubConnection.SendAsync("SendMessage", username, currentMessage);
+			currentMessage = "";
+		}
+	}
 
-    private async Task ScrollToBottom()
-    {
-        await JS.InvokeVoidAsync("scrollToBottom", messagesContainer);
-    }
+	private async Task HandleKeyPress(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+		{
+			await SendMessage();
+		}
+	}
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await ScrollToBottom();
-        }
-    }
+	private async Task ScrollToBottom()
+	{
+		await JS.InvokeVoidAsync("scrollToBottom", messagesContainer);
+	}
+
+	private async Task OnBrightnessChanged(ChangeEventArgs e)
+	{
+		if (int.TryParse(e.Value?.ToString(), out var value))
+		{
+			brightness = value;
+			await hubConnection.SendAsync("SetBrightness", username, brightness);
+		}
+	}
+
+
 }
 
 <style>
-    .message {
-        background-color: #f0f0f0;
-        margin: 5px;
-        padding: 10px;
-        border-radius: 5px;
-        word-wrap: break-word;
-    }
+	.message {
+		background-color: #f0f0f0;
+		margin: 5px;
+		padding: 10px;
+		border-radius: 5px;
+		word-wrap: break-word;
+	}
 
-    .user-message {
-        background-color: #e0ffe0; /* Light green for user messages */
-    }
+	.user-message {
+		background-color: #e0ffe0; /* Light green for user messages */
+	}
 
-    .other-message {
-        background-color: #f0f0f0; /* Light gray for other messages */
-    }
+	.other-message {
+		background-color: #f0f0f0; /* Light gray for other messages */
+	}
 
-    .message strong {
-        color: #4CAF50;
-    }
+	.message strong {
+		color: #4CAF50;
+	}
 
-    .message span {
-        color: #333;
-    }
+	.message span {
+		color: #333;
+	}
 </style>

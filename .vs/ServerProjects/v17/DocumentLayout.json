@@ -11,24 +11,16 @@
       "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\components\\pages\\join.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\pages\\join.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\serverprojects\\chatroom\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -42,45 +34,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Routes.razor",
-              "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\Routes.razor",
-              "RelativeDocumentMoniker": "ChatRoom\\Components\\Routes.razor",
-              "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\Routes.razor",
-              "RelativeToolTip": "ChatRoom\\Components\\Routes.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-17T14:27:06.544Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "_Imports.razor",
-              "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\_Imports.razor",
-              "RelativeDocumentMoniker": "ChatRoom\\Components\\_Imports.razor",
-              "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\_Imports.razor",
-              "RelativeToolTip": "ChatRoom\\Components\\_Imports.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-17T13:21:35.125Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "Join.razor",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\Pages\\Join.razor",
               "RelativeDocumentMoniker": "ChatRoom\\Components\\Pages\\Join.razor",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\Pages\\Join.razor",
               "RelativeToolTip": "ChatRoom\\Components\\Pages\\Join.razor",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-17T13:19:16.177Z",
+              "WhenOpened": "2025-04-17T15:39:02.629Z",
               "EditorCaption": ""
             },
             {
@@ -91,7 +57,7 @@
               "RelativeDocumentMoniker": "ChatRoom\\Components\\Pages\\Chat.razor",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Components\\Pages\\Chat.razor",
               "RelativeToolTip": "ChatRoom\\Components\\Pages\\Chat.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAAwFcAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-04-17T12:46:28.867Z",
               "EditorCaption": ""
@@ -104,27 +70,27 @@
               "RelativeDocumentMoniker": "ChatRoom\\Hubs\\ChatHub.cs",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Hubs\\ChatHub.cs",
               "RelativeToolTip": "ChatRoom\\Hubs\\ChatHub.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-17T12:58:01.067Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
               "Title": "Message.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Models\\Message.cs",
               "RelativeDocumentMoniker": "ChatRoom\\Models\\Message.cs",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Models\\Message.cs",
               "RelativeToolTip": "ChatRoom\\Models\\Message.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-17T12:57:52.312Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\Program.cs",
               "RelativeDocumentMoniker": "ChatRoom\\Program.cs",
@@ -132,8 +98,7 @@
               "RelativeToolTip": "ChatRoom\\Program.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-17T12:50:26.245Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-17T12:50:26.245Z"
             },
             {
               "$type": "Document",
@@ -145,8 +110,7 @@
               "RelativeToolTip": "ChatRoom\\Components\\App.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-17T12:45:56.986Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-17T12:45:56.986Z"
             }
           ]
         }

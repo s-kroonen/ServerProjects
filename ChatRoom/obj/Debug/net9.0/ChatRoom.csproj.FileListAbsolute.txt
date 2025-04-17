@@ -97,3 +97,4 @@ C:\Users\Storm\source\repos\ServerProjects\ChatRoom\obj\Debug\net9.0\ChatRoom.pd
 C:\Users\Storm\source\repos\ServerProjects\ChatRoom\obj\Debug\net9.0\ChatRoom.genruntimeconfig.cache
 C:\Users\Storm\source\repos\ServerProjects\ChatRoom\obj\Debug\net9.0\ref\ChatRoom.dll
 C:\Users\Storm\source\repos\ServerProjects\ChatRoom\obj\Debug\net9.0\compressed\1kk8ciqg7z-nomiparjwg.gz
+C:\Users\Storm\source\repos\ServerProjects\ChatRoom\obj\Debug\net9.0\ChatRoom.sourcelink.json

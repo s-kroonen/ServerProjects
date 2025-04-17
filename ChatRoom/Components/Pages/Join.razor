@@ -1,0 +1,44 @@
+﻿@page "/join"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject ILogger<Join> Logger
+<h3>Join Chat</h3>
+
+<div class="p-4">
+    <label>Enter a username:</label><br />
+    <input @bind="username" @bind:event="oninput" placeholder="Your name"
+           class="border p-2 rounded w-64" />
+
+    <br /><br />
+
+    <button class="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            @onclick="JoinChat"
+            disabled="@isButtonDisabled">
+        Join Chat
+    </button>
+
+    <p class="mt-4 text-gray-500">Live username: <strong>@username</strong></p>
+</div>
+
+@code {
+    private string username = "";
+
+    private bool isButtonDisabled => string.IsNullOrWhiteSpace(username);
+
+
+    private void JoinChat()
+    {
+        Logger.LogInformation("Join button clicked. Username: {Username}", username);
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            var url = $"/chat?username={Uri.EscapeDataString(username)}";
+            Logger.LogInformation("Navigating to: {Url}", url);
+            Navigation.NavigateTo(url);
+        }
+        else
+        {
+            Logger.LogWarning("Join attempted with empty or invalid username.");
+        }
+    }
+}

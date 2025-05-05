@@ -7,8 +7,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  checkout:
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.commit.outputs.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+  build-chatroom:
+    runs-on: ubuntu-latest
+    needs: checkout
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,25 +31,46 @@ jobs:
         run: dotnet restore
 
       - name: Publish Chatroom
-        run: dotnet publish ChatRoom/ChatRoom.csproj -c Release -o out
+        run: dotnet publish ChatRoom/ChatRoom.csproj -c Release -o out/ChatRoom
 
-      - name: Publish BeerTap
-        run: dotnet publish BeerTap/BeerTap.csproj -c Release -o out
-
-      - name: Upload build artifact
+      - name: Upload Chatroom Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: published-app
-          path: out
+          name: chatroom-app
+          path: out/ChatRoom
 
-  deploy:
+  build-beertap:
     runs-on: ubuntu-latest
-    needs: build
+    needs: checkout
     steps:
-      - name: Download build artifact
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish BeerTap
+        run: dotnet publish BeerTap/BeerTap.csproj -c Release -o out/BeerTap
+
+      - name: Upload BeerTap Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beertap-app
+          path: out/BeerTap
+
+  deploy-chatroom:
+    runs-on: ubuntu-latest
+    needs: build-chatroom
+    steps:
+      - name: Download Chatroom Artifact
         uses: actions/download-artifact@v4
         with:
-          name: published-app
+          name: chatroom-app
           path: out
 
       - name: Deploy Chatroom
@@ -50,8 +80,29 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "out/Chatroom/*"
-          target: "/var/www/ServerProjects/Chatroom/out"
+          source: "out/*"
+          target: "/var/www/ServerProjects/ChatRoom/out"
+          # pre: |
+          #   mkdir -p /var/www/ServerProjects/ChatRoom/out
+
+      - name: Restart Chatroom Service
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: sudo systemctl restart ChatRoom.service
+
+  deploy-beertap:
+    runs-on: ubuntu-latest
+    needs: build-beertap
+    steps:
+      - name: Download BeerTap Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: beertap-app
+          path: out
 
       - name: Deploy BeerTap
         uses: appleboy/scp-action@v0.1.7
@@ -60,20 +111,16 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "out/BeerTap/*"
+          source: "out/*"
           target: "/var/www/ServerProjects/BeerTap/out"
+          # pre: |
+          #   mkdir -p /var/www/ServerProjects/ChatRoom/out
 
-  run:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Restart Server Service
+      - name: Restart BeerTap Service
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            sudo systemctl restart ChatRoom.service
-            sudo systemctl restart BeerTap.service
+          script: sudo systemctl restart BeerTap.service

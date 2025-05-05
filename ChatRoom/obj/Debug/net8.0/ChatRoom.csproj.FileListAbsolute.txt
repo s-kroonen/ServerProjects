@@ -1,7 +1,0 @@
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.csproj.AssemblyReference.cache
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.AssemblyInfoInputs.cache
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.AssemblyInfo.cs
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.csproj.CoreCompileInputs.cache
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Storm\source\repos\s-kroonen\ServerProjects\ChatRoom\obj\Debug\net8.0\ChatRoom.sourcelink.json

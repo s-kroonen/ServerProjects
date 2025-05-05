@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '8.0'
 
       - name: Publish Chatroom
-        run: dotnet publish Chatroom/Chatroom.csproj -c Release -o out
+        run: dotnet publish ChatRoom/ChatRoom.csproj -c Release -o out
 
       - name: Deploy Chatroom
         uses: appleboy/scp-action@v0.1.7

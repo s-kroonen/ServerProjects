@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore
 
       - name: Publish Chatroom
-        run: dotnet publish Chatroom/Chatroom.csproj -c Release -o out
+        run: dotnet publish ChatRoom/ChatRoom.csproj -c Release -o out
 
       - name: Publish BeerTap
         run: dotnet publish BeerTap/BeerTap.csproj -c Release -o out

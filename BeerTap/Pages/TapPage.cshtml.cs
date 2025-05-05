@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc;
 
 public class TapPageModel : PageModel
 {
@@ -10,12 +10,13 @@ public class TapPageModel : PageModel
 
     public string Message { get; set; } = "";
 
-    public IActionResult OnGet()
+    public IActionResult OnGet(string? returnUrl)
     {
         UserId = HttpContext.Session.GetString("UserId");
         if (string.IsNullOrEmpty(UserId))
         {
-            return RedirectToPage("/Index", new { returnUrl = $"/Tap/{TapId}" });
+            // Redirect to login, passing the returnUrl
+            return RedirectToPage("/Index", new { returnUrl = returnUrl ?? $"/Tap/{TapId}" });
         }
 
         return Page();
@@ -29,10 +30,8 @@ public class TapPageModel : PageModel
             return RedirectToPage("/Index", new { returnUrl = $"/Tap/{TapId}" });
         }
 
-        // Here you'd trigger the actual hardware/API to pour beer.
-        // For now, we simulate.
+        // Simulate the pour action (replace with hardware logic)
         Message = $"Beer poured on tap {TapId} for user {UserId}.";
-
         return Page();
     }
 

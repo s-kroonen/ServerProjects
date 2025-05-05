@@ -31,7 +31,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "out/*"
-          target: "/var/www/ServerProjects/BeerTap/out"
+          target: "/var/www/ServerProjects/BeerTap"
 
       - name: Restart BeerTap Service
         uses: appleboy/ssh-action@v0.1.7

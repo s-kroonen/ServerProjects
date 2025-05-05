@@ -81,7 +81,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "out/*"
-          target: "/var/www/ServerProjects/ChatRoom/out"
+          target: "/var/www/ServerProjects/ChatRoom"
           # pre: |
           #   mkdir -p /var/www/ServerProjects/ChatRoom/out
 
@@ -112,7 +112,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "out/*"
-          target: "/var/www/ServerProjects/BeerTap/out"
+          target: "/var/www/ServerProjects/BeerTap"
           # pre: |
           #   mkdir -p /var/www/ServerProjects/ChatRoom/out
 

@@ -83,21 +83,19 @@
               "RelativeToolTip": "ChatRoom\\Components\\_Layout.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-05T12:35:21.965Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T12:35:21.965Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "ChatRoom",
+              "Title": "ChatRoom.csproj",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
               "RelativeDocumentMoniker": "ChatRoom\\ChatRoom.csproj",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
               "RelativeToolTip": "ChatRoom\\ChatRoom.csproj",
               "ViewState": "AgIAAA0AAAAAAAAAAAAgPQAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-05-05T12:29:10.261Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T12:29:10.261Z"
             },
             {
               "$type": "Document",
@@ -109,8 +107,7 @@
               "RelativeToolTip": "ChatRoom\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-05T12:26:43.65Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T12:26:43.65Z"
             },
             {
               "$type": "Document",
@@ -122,8 +119,7 @@
               "RelativeToolTip": "ChatRoom\\Components\\App.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-05T12:26:39.802Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T12:26:39.802Z"
             },
             {
               "$type": "Document",
@@ -135,8 +131,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\TapPage.cshtml.cs",
               "ViewState": "AgIAABUAAAAAAAAAAAAAACsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-05T11:19:18.068Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T11:19:18.068Z"
             },
             {
               "$type": "Document",
@@ -148,8 +143,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\TapPage.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-05T11:18:44.596Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T11:18:44.596Z"
             },
             {
               "$type": "Document",
@@ -161,8 +155,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\home.cshtml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-05T11:10:10.533Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T11:10:10.533Z"
             },
             {
               "$type": "Document",
@@ -174,8 +167,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\Home.cshtml",
               "ViewState": "AgIAABQAAAAAAAAAAAAIwDMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-05T11:09:45.823Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T11:09:45.823Z"
             },
             {
               "$type": "Document",
@@ -187,8 +179,7 @@
               "RelativeToolTip": "BeerTap\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-05T10:46:27.537Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T10:46:27.537Z"
             },
             {
               "$type": "Document",
@@ -200,8 +191,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\Index.cshtml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-05T10:44:06.846Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T10:44:06.846Z"
             },
             {
               "$type": "Document",
@@ -213,8 +203,7 @@
               "RelativeToolTip": "BeerTap\\Pages\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-05T10:43:57.216Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T10:43:57.216Z"
             }
           ]
         }

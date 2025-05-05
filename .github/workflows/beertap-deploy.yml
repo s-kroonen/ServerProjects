@@ -1,0 +1,44 @@
+name: Deploy BeerTap Service
+
+on:
+  push:
+    branches-ignore:
+      - 'main'
+    paths:
+      - 'BeerTap/**'
+  workflow_dispatch:
+
+jobs:
+  build-deploy-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      - name: Publish BeerTap
+        run: dotnet publish BeerTap/BeerTap.csproj -c Release -o out
+
+      - name: Deploy BeerTap
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "out/*"
+          target: "/var/www/ServerProjects/BeerTap/out"
+
+      - name: Restart BeerTap Service
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            sudo systemctl restart BeerTap.service

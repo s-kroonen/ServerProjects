@@ -3,16 +3,24 @@
   "WorkspaceRootPath": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\components\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\chatroom.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\chatroom.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}|ChatRoom\\ChatRoom.csproj|solutionrelative:chatroom\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E679DCB0-CF3C-432E-B2CA-03135299F6FB}|BeerTap\\BeerTap.csproj|c:\\users\\storm\\source\\repos\\s-kroonen\\serverprojects\\beertap\\pages\\tappage.cshtml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -50,16 +58,42 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "Routes.razor",
+              "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\Routes.razor",
+              "RelativeDocumentMoniker": "ChatRoom\\Components\\Routes.razor",
+              "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\Routes.razor",
+              "RelativeToolTip": "ChatRoom\\Components\\Routes.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-05T12:36:44.425Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "ChatRoom\\Components\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\_Layout.cshtml",
+              "RelativeToolTip": "ChatRoom\\Components\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-05T12:35:21.965Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "ChatRoom",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
               "RelativeDocumentMoniker": "ChatRoom\\ChatRoom.csproj",
-              "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj*",
-              "RelativeToolTip": "ChatRoom\\ChatRoom.csproj*",
+              "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
+              "RelativeToolTip": "ChatRoom\\ChatRoom.csproj",
               "ViewState": "AgIAAA0AAAAAAAAAAAAgPQAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-05-05T12:29:10.261Z",
@@ -67,7 +101,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Program.cs",
               "RelativeDocumentMoniker": "ChatRoom\\Program.cs",
@@ -80,20 +114,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "App.razor",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\App.razor",
               "RelativeDocumentMoniker": "ChatRoom\\Components\\App.razor",
               "ToolTip": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\Components\\App.razor",
               "RelativeToolTip": "ChatRoom\\Components\\App.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAiAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-05-05T12:26:39.802Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "TapPage.cshtml.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\TapPage.cshtml.cs",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\TapPage.cshtml.cs",
@@ -106,7 +140,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "TapPage.cshtml",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\TapPage.cshtml",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\TapPage.cshtml",
@@ -119,7 +153,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 8,
               "Title": "home.cshtml.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\home.cshtml.cs",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\home.cshtml.cs",
@@ -132,7 +166,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "Home.cshtml",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\Home.cshtml",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\Home.cshtml",
@@ -145,7 +179,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 11,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Program.cs",
               "RelativeDocumentMoniker": "BeerTap\\Program.cs",
@@ -158,7 +192,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "Index.cshtml.cs",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\Index.cshtml.cs",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\Index.cshtml.cs",
@@ -171,7 +205,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 10,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\Pages\\Index.cshtml",
               "RelativeDocumentMoniker": "BeerTap\\Pages\\Index.cshtml",

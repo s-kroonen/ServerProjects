@@ -20,10 +20,10 @@ jobs:
         with:
           dotnet-version: '8.0'
 
-      - name: Publish Chatroom
+      - name: Publish ChatRoom
         run: dotnet publish ChatRoom/ChatRoom.csproj -c Release -o out
 
-      - name: Deploy Chatroom
+      - name: Deploy ChatRoom
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -31,9 +31,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "out/*"
-          target: "/var/www/ServerProjects/Chatroom"
+          target: "/var/www/ServerProjects/ChatRoom"
 
-      - name: Restart Chatroom Service
+      - name: Restart ChatRoom Service
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}

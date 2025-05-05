@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VpTmgJchxk4=",
+  "dgSpecHash": "eMavZlvIQpA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Storm\\source\\repos\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
+  "projectFilePath": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\ChatRoom\\ChatRoom.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Storm\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\9.0.4\\microsoft.aspnetcore.connections.abstractions.9.0.4.nupkg.sha512",
     "C:\\Users\\Storm\\.nuget\\packages\\microsoft.aspnetcore.http.connections.client\\9.0.4\\microsoft.aspnetcore.http.connections.client.9.0.4.nupkg.sha512",

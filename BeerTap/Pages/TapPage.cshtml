@@ -1,0 +1,19 @@
+﻿@page "{tapId:int}"
+@model TapPageModel
+@{
+    ViewData["Title"] = $"Tap {Model.TapId}";
+}
+
+<h1>Tap @Model.TapId</h1>
+
+<p>Welcome, @Model.UserId!</p>
+
+<form method="post" asp-page-handler="PourBeer">
+    <button type="submit">Pour Beer</button>
+</form>
+
+<form method="post" asp-page-handler="Logout">
+    <button type="submit">Logout</button>
+</form>
+
+<p>@Model.Message</p>

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "f6FqI28/PTQ=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Storm\\source\\repos\\s-kroonen\\ServerProjects\\BeerTap\\BeerTap.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Storm\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

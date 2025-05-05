@@ -1,0 +1,26 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+@if (!Model.IsLoggedIn)
+{
+    <h2>Login</h2>
+    <form method="post" asp-page-handler="Login">
+        <input type="text" name="LoginUserId" placeholder="User ID" required />
+        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        <button type="submit">Login</button>
+    </form>
+
+    <h2>Register</h2>
+    <form method="post" asp-page-handler="Register">
+        <input type="text" name="RegisterUserId" placeholder="New User ID" required />
+        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        <button type="submit">Register</button>
+    </form>
+}
+else
+{
+    <p>Redirecting to Home...</p>
+}

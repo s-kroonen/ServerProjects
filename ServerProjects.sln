@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatRoom", "ChatRoom\ChatRoom.csproj", "{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap", "BeerTap\BeerTap.csproj", "{E679DCB0-CF3C-432E-B2CA-03135299F6FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

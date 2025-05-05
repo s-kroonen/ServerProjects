@@ -1,0 +1,52 @@
+﻿@page
+@model HomeModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>Welcome, @Model.LoggedInUserId!</h1>
+
+<form method="post" asp-page-handler="Logout">
+    <button type="submit">Logout</button>
+</form>
+
+<hr />
+
+<h2>Select a Tap</h2>
+<ul>
+    @foreach (var tap in Model.AvailableTaps)
+    {
+        <li><a asp-page="/Tap/TapPage" asp-route-tapId="@tap">Tap @tap</a></li>
+    }
+</ul>
+
+<hr />
+
+<h2>Scan QR Code</h2>
+<div id="reader" width="300px"></div>
+<p id="scanResult">Waiting for scan...</p>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+<script>
+    window.addEventListener('load', () => {
+        const html5QrCode = new Html5Qrcode("reader");
+        const qrConfig = { fps: 10, qrbox: 250 };
+
+        html5QrCode.start(
+            { facingMode: "environment" },  // Use rear camera
+            qrConfig,
+            (decodedText, decodedResult) => {
+                document.getElementById("scanResult").innerText = "Scanned: " + decodedText;
+                html5QrCode.stop().then(() => {
+                    window.location.href = decodedText;
+                });
+            },
+            (errorMessage) => {
+                // Optional: console.log(errorMessage);
+            }
+        ).catch(err => {
+            console.error("QR code scanner failed to start", err);
+        });
+    });
+</script>
+

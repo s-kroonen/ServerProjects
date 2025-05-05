@@ -1,6 +1,11 @@
 [
   {
     "Name": "New Profile",
-    "Projects": []
+    "Projects": [
+      {
+        "Path": "BeerTap\\BeerTap.csproj",
+        "Action": "Start"
+      }
+    ]
   }
 ]

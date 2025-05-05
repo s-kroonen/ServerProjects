@@ -21,7 +21,9 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
+
+app.MapBlazorHub();
 app.MapHub<ChatHub>("/chathub");
 
 app.MapRazorComponents<App>()

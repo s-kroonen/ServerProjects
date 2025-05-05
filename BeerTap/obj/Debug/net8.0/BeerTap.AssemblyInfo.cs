@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BeerTap")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+43167918c2bda18307cdcd9faa4fae87da510778")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+82f255d41abe46c84a1726e99723a4922f3b6efa")]
 [assembly: System.Reflection.AssemblyProductAttribute("BeerTap")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BeerTap")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

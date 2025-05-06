@@ -27,13 +27,28 @@ else
 {
     <p>You are not currently in the queue.</p>
 }
+<p>@Model.Message</p>
 
-<form method="post" asp-page-handler="Cancel">
-    <button type="submit">Cancel Request</button>
+<form method="post" asp-page-handler="CancelUser">
+    <button type="submit">Back</button>
 </form>
 
 <form method="post" asp-page-handler="Logout">
     <button type="submit">Logout</button>
 </form>
 
-<p>@Model.Message</p>
+<script>
+    const tapId = "@Model.TapId";
+    const userId = "@Model.UserId";
+
+    window.addEventListener("beforeunload", function () {
+        if (!tapId || !userId) return;
+
+        navigator.sendBeacon(`@Url.Page("Tap", "CancelUser")`, new URLSearchParams({
+            tapId: tapId,
+            userId: userId
+        }));
+    });
+</script>
+
+

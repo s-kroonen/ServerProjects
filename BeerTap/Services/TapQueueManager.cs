@@ -25,6 +25,12 @@ namespace BeerTap.Services
                         QueuedAt = DateTime.UtcNow
                     });
                     Console.WriteLine($"User {userId} enqueued for tap {tapId}");
+                    if (_tapQueues[tapId].Count == 1)
+                    {
+
+                        var currentUser = _tapQueues[tapId].Peek();
+                        CurrentUserChanged?.Invoke(tapId, currentUser.UserId);
+                    }
                 }
             }
         }
@@ -36,6 +42,7 @@ namespace BeerTap.Services
                 {
                     var user = queue.Dequeue();
 
+                    Console.WriteLine($"User {user.UserId} dequeue for tap {tapId}");
                     if (queue.Count > 0)
                     {
                         var nextUser = queue.Peek();
@@ -85,7 +92,7 @@ namespace BeerTap.Services
             {
                 if (_tapQueues.TryGetValue(tapId, out var queue))
                 {
-                    var list = queue.ToList(); // Snapshot to prevent enumeration issues
+                    var list = queue.ToList();
                     return list.FindIndex(entry => entry.UserId == userId) + 1;
                 }
 
@@ -105,8 +112,13 @@ namespace BeerTap.Services
                         var updatedQueue = new Queue<TapQueueEntry>(
                             queue.Where(entry => entry.UserId != userId)
                         );
+                        Console.WriteLine($"User {userId} cancel for tap {tapId}");
 
                         _tapQueues[tapId] = updatedQueue;
+                    } 
+                    else if(queue.Count > 0)
+                    {
+                        this.DequeueUser(tapId);
                     }
                 }
             }

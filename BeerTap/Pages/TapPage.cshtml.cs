@@ -44,12 +44,6 @@ public class TapPageModel : PageModel
             return RedirectToPage("/Index", new { returnUrl = $"/Tap/{TapId}" });
         }
 
-        if (!_queue.IsUserNext(TapId, UserId))
-        {
-            Message = "Please wait your turn.";
-            return Page();
-        }
-
         // Simulate tap logic (trigger MQTT here if needed)
         _queue.DequeueUser(TapId);
 
@@ -62,4 +56,16 @@ public class TapPageModel : PageModel
         HttpContext.Session.Remove("UserId");
         return RedirectToPage("/Index");
     }
+
+    public IActionResult OnPostCancelUser()
+    {
+        UserId = HttpContext.Session.GetString("UserId");
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            _queue.Cancel(TapId, UserId);
+        }
+
+        return RedirectToPage("/Home");
+    }
+
 }

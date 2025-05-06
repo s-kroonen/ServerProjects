@@ -1,9 +1,14 @@
+using BeerTap.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddHostedService<MqttService>();
+builder.Services.AddHostedService<MqttService>(); 
+builder.Services.AddSingleton<TapQueueManager>();
+builder.Services.AddSingleton<UserService>();
+
 
 builder.Services.AddSession();
 

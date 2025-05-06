@@ -1,4 +1,4 @@
-﻿@page "{tapId:int}"
+﻿@page "{tapId}"
 @model TapPageModel
 @{
     ViewData["Title"] = $"Tap {Model.TapId}";
@@ -8,8 +8,28 @@
 
 <p>Welcome, @Model.UserId!</p>
 
-<form method="post" asp-page-handler="PourBeer">
-    <button type="submit">Pour Beer</button>
+@if (Model.QueuePosition > 0)
+{
+    <p>You are #@Model.QueuePosition in the queue.</p>
+
+    @if (Model.CanTap)
+    {
+        <form method="post" asp-page-handler="PourBeer">
+            <button type="submit">Pour Beer</button>
+        </form>
+    }
+    else
+    {
+        <p>Please wait for your turn...</p>
+    }
+}
+else
+{
+    <p>You are not currently in the queue.</p>
+}
+
+<form method="post" asp-page-handler="Cancel">
+    <button type="submit">Cancel Request</button>
 </form>
 
 <form method="post" asp-page-handler="Logout">

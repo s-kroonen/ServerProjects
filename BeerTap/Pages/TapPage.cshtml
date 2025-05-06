@@ -36,19 +36,13 @@ else
 <form method="post" asp-page-handler="Logout">
     <button type="submit">Logout</button>
 </form>
-
-<script>
-    const tapId = "@Model.TapId";
-    const userId = "@Model.UserId";
-
-    window.addEventListener("beforeunload", function () {
-        if (!tapId || !userId) return;
-
-        navigator.sendBeacon(`@Url.Page("Tap", "CancelUser")`, new URLSearchParams({
-            tapId: tapId,
-            userId: userId
-        }));
+<script type="text/javascript">
+    window.addEventListener("unload", function () {
+        navigator.sendBeacon("/Tap?handler=CancelUser");
     });
 </script>
+
+
+
 
 

@@ -1,3 +1,4 @@
+using BeerTap.Hubs;
 using BeerTap.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ builder.Services.AddHostedService<MqttService>();
 builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<UserService>();
 
+builder.Services.AddSignalR();
 
 builder.Services.AddSession();
 
@@ -30,6 +32,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapHub<TapQueueHub>("/tapqueuehub");
 
 app.UseSession();
 app.Run();

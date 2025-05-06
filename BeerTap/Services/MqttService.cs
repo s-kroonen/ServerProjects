@@ -37,18 +37,18 @@ public class MqttService : IHostedService
             Console.WriteLine($"Received from {topic}: {payload}");
 
             // Handle the message as needed...
-            if (topic.EndsWith("/amount"))
-            {
-                var tapId = topic.Split('/')[2];
-                var amount = int.Parse(payload);
+            //if (topic.EndsWith("/amount"))
+            //{
+            //    var tapId = topic.Split('/')[2];
+            //    var amount = int.Parse(payload);
 
-                var user = _tapQueueManager.DequeueUser(tapId);
-                if (user != null)
-                {
-                    await _userService.UpdateUserScoreAsync(user.UserId, amount);
-                    Console.WriteLine($"User {user.UserId} scored {amount} ml on tap {tapId}");
-                }
-            }
+            //    var user = _tapQueueManager.DequeueUser(tapId);
+            //    if (user != null)
+            //    {
+            //        await _userService.UpdateUserScoreAsync(user.Result.UserId, amount);
+            //        Console.WriteLine($"User {user.UserId} scored {amount} ml on tap {tapId}");
+            //    }
+            //}
             await Task.CompletedTask;
         };
 

@@ -1,18 +1,68 @@
-﻿using MQTTnet;
-using MQTTnet.Formatter;
-using MQTTnet.Packets;
+﻿using BeerTap.Services;
+using MQTTnet;
 using MQTTnet.Protocol;
 using System.Text;
 
 public class MqttService : IHostedService
 {
     private IMqttClient _mqttClient;
+    private readonly TapQueueManager _tapQueueManager;
+    private readonly UserService _userService;
+
     private readonly string _topicPrefix = "beer/tap/";
-    private readonly string _clientId = "Taps";
+    private readonly string _clientId = "TapApi";
     private readonly string _host = "wall-e";
     private readonly int _port = 1883;
     private readonly string _username = "public";
     private readonly string _password = "temp-01";
+    public MqttService(TapQueueManager tapQueueManager, UserService userService)
+    {
+        _tapQueueManager = tapQueueManager;
+        _userService = userService;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await ConnectAsync();
+        _tapQueueManager.CurrentUserChanged += async (tapId, userId) =>
+        {
+            await AnnounceCurrentUser(tapId, userId);
+        };
+
+        _mqttClient.ApplicationMessageReceivedAsync += async e =>
+        {
+            var topic = e.ApplicationMessage.Topic;
+            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
+            Console.WriteLine($"Received from {topic}: {payload}");
+
+            // Handle the message as needed...
+            if (topic.EndsWith("/amount"))
+            {
+                var tapId = topic.Split('/')[2];
+                var amount = int.Parse(payload);
+
+                var user = _tapQueueManager.DequeueUser(tapId);
+                if (user != null)
+                {
+                    await _userService.UpdateUserScoreAsync(user.UserId, amount);
+                    Console.WriteLine($"User {user.UserId} scored {amount} ml on tap {tapId}");
+                }
+            }
+            await Task.CompletedTask;
+        };
+
+        Console.WriteLine("MQTT service started");
+
+    }
+
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        Clean_Disconnect();
+        return Task.CompletedTask;
+    }
+
 
     public async Task SubscribeToTap(string tapId)
     {
@@ -20,9 +70,10 @@ public class MqttService : IHostedService
         await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
             .WithTopic(topic)
             .Build());
+        Console.WriteLine($"Subscribed to:{topic}");
     }
 
-    public async Task PublishCommand(string tapId, string message)
+    public async Task PublishTapCommand(string tapId, string message)
     {
         string topic = $"{_topicPrefix}{tapId}/cmd";
 
@@ -33,35 +84,25 @@ public class MqttService : IHostedService
             .Build();
 
         await _mqttClient.PublishAsync(mqttMessage);
+        Console.WriteLine($"Published to:{topic} with meassage:{message}");
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task AnnounceCurrentUser(string tapId, string userId)
     {
-        await ConnectAsync();
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic($"tap/{tapId}/currentUser")
+            .WithPayload(userId)
+            .Build();
 
-        _mqttClient.ApplicationMessageReceivedAsync += async e =>
+        if (_mqttClient?.IsConnected == true)
         {
-            var topic = e.ApplicationMessage.Topic;
-            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-
-            Console.WriteLine($"Received from {topic}: {payload}");
-
-            // Handle the message as needed...
-            await Task.CompletedTask;
-        };
-
-        await SubscribeToTap("1");
-
-        Console.WriteLine("MQTT service started and subscribed.");
-
+            await _mqttClient.PublishAsync(message);
+            Console.WriteLine($"Published current user {userId} to tap {tapId}");
+        }
     }
 
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        Clean_Disconnect();
-        return Task.CompletedTask;
-    }
+    
 
     public async Task Clean_Disconnect()
     {

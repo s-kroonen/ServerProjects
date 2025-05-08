@@ -1,0 +1,111 @@
+﻿@page "/tappage/{TapId}"
+@inject BeerTap.Services.TapQueueManager QueueManager
+@inject BeerTap.Services.MqttService MqttService
+@inject BeerTap.Services.UserService UserService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@implements IDisposable  
+
+<h3>Tap @TapId</h3>
+
+@if (UserId is null)
+{
+    <p>Redirecting to login...</p>
+}
+else
+{
+    <p>Welcome, @UserId!</p>
+    <p>@QueueManager.GetUserPosition(TapId, UserId)</p>
+
+    @if (QueueManager.GetUserPosition(TapId, UserId) == -1)
+    {
+        <button class="btn btn-success" @onclick="JoinQueue">Join Queue</button>
+    }
+    else
+    {
+        <p>Your position in the queue: @QueuePosition</p>
+
+        @if (CanTap)
+        {
+            <button class="btn btn-primary" @onclick="PourBeer">Pour Beer</button>
+        }
+        else
+        {
+            <p>Please wait your turn...</p>
+        }
+
+        <button class="btn btn-danger" @onclick="Cancel">Cancel</button>
+    }
+
+}
+
+@code {
+    [Parameter]
+    public string TapId { get; set; } = string.Empty;
+
+    private string? UserId;
+    private int QueuePosition;
+    private bool CanTap => QueueManager.IsUserNext(TapId, UserId!);
+
+    protected override void OnInitialized()
+    {
+        // Simulate session or provide your own user logic
+        UserId = "ABC"; // Replace with session or user tracking logic
+
+        if (UserId is null)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+        MqttService.SubscribeToTap(TapId);
+
+        QueueManager.EnqueueUser(TapId, UserId);
+        QueueManager.CurrentUserChanged += OnQueueChanged;
+
+        UpdateQueueInfo();
+    }
+
+    private void UpdateQueueInfo()
+    {
+        QueuePosition = QueueManager.GetUserPosition(TapId, UserId);
+        StateHasChanged();
+    }
+
+    private async Task PourBeer()
+    {
+        Console.WriteLine("PourStart");
+        // QueueManager.DequeueUser(TapId);
+        MqttService.PublishTapCommand(TapId, "start");
+        UpdateQueueInfo();
+    }
+
+    private Task Cancel()
+    {
+        QueueManager.Cancel(TapId, UserId);
+        Navigation.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+    private void JoinQueue()
+    {
+        QueueManager.EnqueueUser(TapId, UserId);
+        UpdateQueueInfo();
+    }
+
+    private void OnQueueChanged(string tap, string user)
+    {
+        if (tap == TapId)
+        {
+            InvokeAsync(() =>
+            {
+                UpdateQueueInfo();
+                StateHasChanged();
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        QueueManager.CurrentUserChanged -= OnQueueChanged;
+    }
+}

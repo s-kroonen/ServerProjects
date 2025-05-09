@@ -6,9 +6,14 @@ namespace BeerTap.Services
 {
     public class MqttService : IHostedService
     {
+        private const int Timeout = 5000;
+        public List<string> TapIds = new() { "1", "2" };
+
         private IMqttClient _mqttClient;
         private readonly TapQueueManager _tapQueueManager;
         private readonly UserService _userService;
+        public event Action<string, int>? OnAmountUpdated;
+        public event Action<string, string>? OnStatusUpdated;
 
         private readonly string _topicPrefix = "beer/tap/";
         private readonly string _clientId = "TapApi";
@@ -36,21 +41,27 @@ namespace BeerTap.Services
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-                Console.WriteLine($"Received from {topic}: {payload}");
+                var segments = topic.Split('/');
+                if (segments.Length < 4) return;
 
-                if (topic.EndsWith("/amount"))
+                var tapId = segments[2];
+                var type = segments[3];
+
+                if (type == "amount" && int.TryParse(payload, out int amount))
                 {
-                    var tapId = topic.Split('/')[2];
-                    var amount = int.Parse(payload);
-
-                    var user = _tapQueueManager.DequeueUser(tapId);
-                    if (user != null)
-                    {
-                        await _userService.UpdateUserScoreAsync(user.Result.UserId, amount);
-                        Console.WriteLine($"User {user.Result.UserId} scored {amount} ml on tap {tapId}");
-                    }
+                    _lastAmounts[tapId] = amount;
+                    OnAmountUpdated?.Invoke(tapId, amount);
+                    StartAmountMonitor(tapId);
                 }
+                else if (type == "status" )
+                {
+                    _CurrentStatuses[tapId] = payload;
+                    OnStatusUpdated?.Invoke(tapId, payload);
+                }
+
+                await Task.CompletedTask;
             };
+
 
             Console.WriteLine("MQTT service started");
 
@@ -104,9 +115,43 @@ namespace BeerTap.Services
             {
                 await _mqttClient.PublishAsync(message);
                 Console.WriteLine($"Published current user {userId} to tap {tapId}");
+                if(userId == "")
+                {
+                    PublishTapCommand(tapId, "reset");
+                } 
             }
         }
 
+        private readonly Dictionary<string, int> _lastAmounts = new();
+        private readonly Dictionary<string, string> _CurrentStatuses= new();
+        private readonly Dictionary<string, CancellationTokenSource> _watchdogTokens = new();
+
+        private void StartAmountMonitor(string tapId)
+        {
+            if (_watchdogTokens.TryGetValue(tapId, out var oldToken))
+            {
+                oldToken.Cancel();
+            }
+
+            var cts = new CancellationTokenSource();
+            _watchdogTokens[tapId] = cts;
+            _ = Task.Run(async () =>
+            {
+                int lastAmount = _lastAmounts[tapId];
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(Timeout, cts.Token);
+                    if (_lastAmounts.TryGetValue(tapId, out int current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
+                    {
+                        Console.WriteLine($"Tap {tapId} finished pouring.");
+                        await _tapQueueManager.DequeueUser(tapId);
+                        await PublishTapCommand(tapId, "done");
+                        break;
+                    }
+                    lastAmount = current;
+                }
+            }, cts.Token);
+        }
 
 
 

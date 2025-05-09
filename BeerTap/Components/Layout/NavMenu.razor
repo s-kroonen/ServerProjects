@@ -1,4 +1,5 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject BeerTap.Services.MqttService MqttService
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BeerTap</a>
     </div>
@@ -20,16 +21,15 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="TapPage/1">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> BeerTap-1
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="TapPage/2">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> BeerTap-2
-            </NavLink>
-        </div>
+        @foreach (var tapId in MqttService.TapIds)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href=@($"TapPage/{tapId}")>
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> BeerTap-@tapId
+                </NavLink>
+            </div>
+        }
+
     </nav>
 </div>
 

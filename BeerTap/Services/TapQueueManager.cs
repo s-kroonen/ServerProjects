@@ -153,6 +153,7 @@ namespace BeerTap.Services
                         else
                         {
                             CurrentUserChanged?.Invoke(tapId, "");
+                            
                         }
                     }
                 }

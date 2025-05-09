@@ -15,7 +15,6 @@
 else
 {
     <p>Welcome, @UserId!</p>
-    <p>@QueueManager.GetUserPosition(TapId, UserId)</p>
 
     @if (QueueManager.GetUserPosition(TapId, UserId) == -1)
     {
@@ -24,6 +23,9 @@ else
     else
     {
         <p>Your position in the queue: @QueuePosition</p>
+
+        <p>Current amount: @CurrentAmount ml</p>
+        <p>Status: @TapStatus</p>
 
         @if (CanTap)
         {
@@ -42,7 +44,8 @@ else
 @code {
     [Parameter]
     public string TapId { get; set; } = string.Empty;
-
+    private int CurrentAmount = 0;
+    private string TapStatus = "idle";
     private string? UserId;
     private int QueuePosition;
     private bool CanTap => QueueManager.IsUserNext(TapId, UserId!);
@@ -59,6 +62,8 @@ else
         }
         MqttService.SubscribeToTap(TapId);
 
+        MqttService.OnAmountUpdated += OnAmountChanged;
+        MqttService.OnStatusUpdated += OnStatusChanged;
         QueueManager.EnqueueUser(TapId, UserId);
         QueueManager.CurrentUserChanged += OnQueueChanged;
 
@@ -104,8 +109,27 @@ else
         }
     }
 
+    private void OnAmountChanged(string tap, int amount)
+    {
+        if (tap == TapId)
+        {
+            CurrentAmount = amount;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void OnStatusChanged(string tap, string status)
+    {
+        if (tap == TapId)
+        {
+            TapStatus = status;
+            InvokeAsync(StateHasChanged);
+        }
+    }
     public void Dispose()
     {
         QueueManager.CurrentUserChanged -= OnQueueChanged;
+        MqttService.OnAmountUpdated -= OnAmountChanged;
+        MqttService.OnStatusUpdated -= OnStatusChanged;
     }
 }

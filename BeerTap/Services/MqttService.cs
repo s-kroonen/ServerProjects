@@ -17,8 +17,10 @@ namespace BeerTap.Services
 
         private readonly string _topicPrefix = "beer/tap/";
         private readonly string _clientId = "TapApi";
-        private readonly string _host = "wall-e";
-        private readonly int _port = 1883;
+        //private readonly string _host = "wall-e";
+        //private readonly int _port = 1883;
+        private readonly string _host = "kroon-en.nl";
+        private readonly int _port = 8883;
         private readonly string _username = "public";
         private readonly string _password = "temp-01";
         public MqttService(TapQueueManager tapQueueManager, UserService userService)
@@ -171,6 +173,12 @@ namespace BeerTap.Services
                 .WithTcpServer(_host, _port)
                 .WithCredentials(_username, _password)
                 .WithCleanSession()
+                .WithTlsOptions(new MqttClientTlsOptions
+                {
+                    UseTls = true,
+                    AllowUntrustedCertificates = true, // only if you're using self-signed certs
+                    CertificateValidationHandler = context => true // optionally accept all certs
+                })
                 .Build();
 
             var response = await _mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);

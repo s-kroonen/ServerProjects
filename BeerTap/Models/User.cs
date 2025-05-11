@@ -1,10 +1,14 @@
-﻿namespace BeerTap.Models
+﻿using System.ComponentModel.DataAnnotations;
+namespace BeerTap.Models
 {
     public class User
     {
-        public string UserId { get; set; } = default!;
-        public string Name { get; set; } = default!;
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(3)]
+        public string UserId { get; set; }
+        public string? PinHash { get; set; }
         public int Score { get; set; }
-        public int Credits { get; set; }
     }
 }

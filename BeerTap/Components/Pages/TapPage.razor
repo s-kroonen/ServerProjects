@@ -3,20 +3,21 @@
 @inject BeerTap.Services.MqttService MqttService
 @inject BeerTap.Services.UserService UserService
 @inject NavigationManager Navigation
+@* @inject BeerTap.Services.UserSessionService Session *@
 @rendermode InteractiveServer
 @implements IDisposable  
 
 <h3>Tap @TapId</h3>
 
-@if (UserId is null)
+@if (UserService._user.UserId is null)
 {
     <p>Redirecting to login...</p>
 }
 else
 {
-    <p>Welcome, @UserId!</p>
+    <p>Welcome, @UserService._user.UserId!</p>
 
-    @if (QueueManager.GetUserPosition(TapId, UserId) == -1)
+    @if (QueueManager.GetUserPosition(TapId, UserService._user.UserId) == -1)
     {
         <button class="btn btn-success" @onclick="JoinQueue">Join Queue</button>
     }
@@ -46,33 +47,37 @@ else
     public string TapId { get; set; } = string.Empty;
     private int CurrentAmount = 0;
     private string TapStatus = "idle";
-    private string? UserId;
+    // private string? UserId;
     private int QueuePosition;
-    private bool CanTap => QueueManager.IsUserNext(TapId, UserId!);
-
+    private bool CanTap => QueueManager.IsUserNext(TapId, UserService._user.UserId!);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!UserService.IsAuthenticated)
+            {
+                Navigation.NavigateTo("/Login");
+            }
+        }
+    }
     protected override void OnInitialized()
     {
-        // Simulate session or provide your own user logic
-        UserId = "ABC"; // Replace with session or user tracking logic
-
-        if (UserId is null)
+        if (UserService._user.UserId != null)
         {
-            Navigation.NavigateTo("/");
-            return;
+            MqttService.SubscribeToTap(TapId);
+
+            MqttService.OnAmountUpdated += OnAmountChanged;
+            MqttService.OnStatusUpdated += OnStatusChanged;
+            QueueManager.EnqueueUser(TapId, UserService._user.UserId);
+            QueueManager.CurrentUserChanged += OnQueueChanged;
+
+            UpdateQueueInfo();
         }
-        MqttService.SubscribeToTap(TapId);
-
-        MqttService.OnAmountUpdated += OnAmountChanged;
-        MqttService.OnStatusUpdated += OnStatusChanged;
-        QueueManager.EnqueueUser(TapId, UserId);
-        QueueManager.CurrentUserChanged += OnQueueChanged;
-
-        UpdateQueueInfo();
     }
 
     private void UpdateQueueInfo()
     {
-        QueuePosition = QueueManager.GetUserPosition(TapId, UserId);
+        QueuePosition = QueueManager.GetUserPosition(TapId, UserService._user.UserId);
         StateHasChanged();
     }
 
@@ -86,14 +91,14 @@ else
 
     private Task Cancel()
     {
-        QueueManager.Cancel(TapId, UserId);
+        QueueManager.Cancel(TapId, UserService._user.UserId);
         Navigation.NavigateTo("/");
         return Task.CompletedTask;
     }
 
     private void JoinQueue()
     {
-        QueueManager.EnqueueUser(TapId, UserId);
+        QueueManager.EnqueueUser(TapId, UserService._user.UserId);
         UpdateQueueInfo();
     }
 

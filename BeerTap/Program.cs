@@ -1,7 +1,9 @@
 using BeerTap.Components;
+using BeerTap.Repositories;
 using BeerTap.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionString");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -11,6 +13,10 @@ builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<MqttService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<MqttService>());
+//builder.Services.AddScoped<UserSessionService>();
+builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
+//builder.Services.AddSingleton<UserRepository>();
+builder.Services.AddSingleton<UserService>();
 
 
 var app = builder.Build();

@@ -10,9 +10,10 @@ namespace BeerTap.Services
         private readonly ProtectedSessionStorage _sessionStorage;
         public User? _user { get; private set; }
 
-        public bool IsAuthenticated => !string.IsNullOrEmpty(_user.UserId);
+        public bool IsAuthenticated => _user != null && !string.IsNullOrEmpty(_user.UserId);
 
-        public  UserService(UserRepository repo, ProtectedSessionStorage sessionStorage)
+
+        public UserService(UserRepository repo, ProtectedSessionStorage sessionStorage)
         {
             _repo = repo;
             _sessionStorage = sessionStorage;

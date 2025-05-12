@@ -28,25 +28,38 @@
 }
 
 @code {
+	[Parameter]
+	[SupplyParameterFromQuery]
+	public string? ReturnUrl { get; set; }
+
 	private LoginModel loginModel = new();
 	private bool loginError = false;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
+		{
 			await UserService.TryRestoreSessionAsync();
+
+			if (UserService.IsAuthenticated && !string.IsNullOrEmpty(ReturnUrl))
+			{
+				NavigationManager.NavigateTo(ReturnUrl);
+			}
+		}
 	}
 
 	private async Task HandleLogin()
 	{
 		loginError = false;
-		Console.WriteLine($"UserId: {loginModel.UserId}, Pin: {loginModel.Pin}");
 
 		var isLoggedIn = await UserService.SignInAsync(loginModel.UserId, loginModel.Pin);
 
 		if (isLoggedIn)
 		{
-			NavigationManager.NavigateTo("/");
+			if (!string.IsNullOrEmpty(ReturnUrl))
+				NavigationManager.NavigateTo(ReturnUrl);
+			else
+				NavigationManager.NavigateTo("/"); // fallback
 		}
 		else
 		{

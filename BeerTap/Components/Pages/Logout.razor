@@ -1,0 +1,19 @@
+﻿@page "/logout"
+@inject BeerTap.Services.UserService UserService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@code {
+    protected override void OnInitialized()
+    {
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            UserService.SignOut();
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+    }
+}

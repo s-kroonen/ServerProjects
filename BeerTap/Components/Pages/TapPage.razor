@@ -8,7 +8,7 @@
 
 <h3>Tap @TapId</h3>
 
-@if (UserService._user.UserId is null)
+@if (@UserService._user == null )
 {
     <p>Redirecting to login...</p>
 }
@@ -53,15 +53,17 @@ else
     {
         if (firstRender)
         {
-            if (!UserService.IsAuthenticated)
+            await UserService.TryRestoreSessionAsync();
+            if (UserService._user.UserId == null)
             {
                 Navigation.NavigateTo("/Login");
             }
+            StateHasChanged();
         }
     }
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        if (UserService._user.UserId != null)
+        if (UserService._user != null)
         {
             MqttService.SubscribeToTap(TapId);
 

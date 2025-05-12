@@ -48,7 +48,20 @@
         }
 
 
-
+        public async Task<User?> GetUserAsync(string userId)
+        {
+            if (userId == null)
+                return null;
+            using (var sqlConnection = new SqlConnection(sqlConnectionString))
+            {
+                // Check if the user already exists
+                var existingUser = await sqlConnection.QuerySingleOrDefaultAsync<User>(@"
+                    SELECT * FROM Users 
+                    WHERE UserId = @UserId",
+                    new { UserId = userId });
+                return existingUser;
+            }
+        }
 
         public async Task<bool> ValidateUserAsync(string userId, string? pin)
         {
@@ -56,7 +69,7 @@
             {
                 var pinHash = await sqlConnection.QuerySingleOrDefaultAsync<string?>("SELECT PinHash FROM Users WHERE UserId = @UserId", new { UserId = userId });
 
-                //if (pinHash == null && pin == null) return true;
+                if (pinHash == null && pin == null) return true;
                 if (pinHash != null && pin != null) return VerifyPin(pin, pinHash);
 
                 return false;

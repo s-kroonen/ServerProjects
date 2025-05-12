@@ -11,7 +11,6 @@ namespace BeerTap.Services
 
         private IMqttClient _mqttClient;
         private readonly TapQueueManager _tapQueueManager;
-        private readonly UserService _userService;
         public event Action<string, int>? OnAmountUpdated;
         public event Action<string, string>? OnStatusUpdated;
 
@@ -23,10 +22,9 @@ namespace BeerTap.Services
         private readonly int _port = 8883;
         private readonly string _username = "public";
         private readonly string _password = "temp-01";
-        public MqttService(TapQueueManager tapQueueManager, UserService userService)
+        public MqttService(TapQueueManager tapQueueManager)
         {
             _tapQueueManager = tapQueueManager;
-            _userService = userService;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

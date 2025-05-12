@@ -4,56 +4,61 @@
 @rendermode InteractiveServer
 
 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+	<DataAnnotationsValidator />
+	<ValidationSummary />
 
-    <div class="mb-3">
-        <label class="form-label">User ID</label>
-        <InputText @bind-Value="loginModel.UserId" class="form-control" />
-        <ValidationMessage For="() => loginModel.UserId" />
-    </div>
+	<div class="mb-3">
+		<label class="form-label">User ID</label>
+		<InputText @bind-Value="loginModel.UserId" class="form-control" />
+		<ValidationMessage For="() => loginModel.UserId" />
+	</div>
 
-    <div class="mb-3">
-        <label class="form-label">PIN (optional)</label>
-        <InputText @bind-Value="loginModel.Pin" type="password" class="form-control" />
-        <ValidationMessage For="() => loginModel.Pin" />
-    </div>
+	<div class="mb-3">
+		<label class="form-label">PIN (optional)</label>
+		<InputText @bind-Value="loginModel.Pin" type="password" class="form-control" />
+		<ValidationMessage For="() => loginModel.Pin" />
+	</div>
 
-    <button type="submit" class="btn btn-success">Login</button>
+	<button type="submit" class="btn btn-success">Login</button>
 </EditForm>
 
 @if (loginError)
 {
-    <div class="alert alert-danger mt-2">Invalid credentials. Please try again.</div>
+	<div class="alert alert-danger mt-2">Invalid credentials. Please try again.</div>
 }
 
 @code {
-    private LoginModel loginModel = new();
-    private bool loginError = false;
+	private LoginModel loginModel = new();
+	private bool loginError = false;
 
-    private async Task HandleLogin()
-    {
-        loginError = false; // Reset error flag
-        Console.WriteLine($"UserId: {loginModel.UserId}, Pin: {loginModel.Pin}");
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+			await UserService.TryRestoreSessionAsync();
+	}
 
-        var isLoggedIn = await UserService.SignInAsync(loginModel.UserId, loginModel.Pin);
+	private async Task HandleLogin()
+	{
+		loginError = false;
+		Console.WriteLine($"UserId: {loginModel.UserId}, Pin: {loginModel.Pin}");
 
-        if (isLoggedIn)
-        {
-            // Redirect after successful login
-            NavigationManager.NavigateTo("/", forceLoad: true);
-        }
-        else
-        {
-            loginError = true; // Show error message
-        }
-    }
+		var isLoggedIn = await UserService.SignInAsync(loginModel.UserId, loginModel.Pin);
 
-    public class LoginModel
-    {
-        [EditorRequired]
-        public string UserId { get; set; }
+		if (isLoggedIn)
+		{
+			NavigationManager.NavigateTo("/");
+		}
+		else
+		{
+			loginError = true;
+		}
+	}
 
-        public string? Pin { get; set; }
-    }
+	public class LoginModel
+	{
+		[EditorRequired]
+		public string UserId { get; set; }
+
+		public string? Pin { get; set; }
+	}
 }

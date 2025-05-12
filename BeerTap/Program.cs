@@ -1,6 +1,7 @@
 using BeerTap.Components;
 using BeerTap.Repositories;
 using BeerTap.Services;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionString");
@@ -10,13 +11,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<TapQueueManager>();
-builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<MqttService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<MqttService>());
-//builder.Services.AddScoped<UserSessionService>();
 builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
-//builder.Services.AddSingleton<UserRepository>();
-builder.Services.AddSingleton<UserService>();
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<UserService>();
+
 
 
 var app = builder.Build();

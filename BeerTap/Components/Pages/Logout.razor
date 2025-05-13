@@ -11,9 +11,9 @@
     {
         if (firstRender)
         {
-
-            UserService.SignOut();
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            await UserService.TryRestoreSessionAsync();
+            await UserService.SignOut();
+            // NavigationManager.NavigateTo("/", forceLoad: true);
         }
     }
 }

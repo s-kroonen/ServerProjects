@@ -13,9 +13,20 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<MqttService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<MqttService>());
-builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
+
+builder.Services.AddTransient<UserRepository>(provider =>
+{
+    var logger = provider.GetRequiredService<ILogger<UserRepository>>(); // Get logger from DI container
+    return new UserRepository(sqlConnectionString, logger); // Inject the logger into the repository
+});
+//builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<UserService>();
+
+
+
+builder.Services.AddControllers();
+
 
 
 
@@ -36,5 +47,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapControllers();
 
 app.Run();

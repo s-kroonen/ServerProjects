@@ -3,20 +3,22 @@
     using Dapper;
     using Microsoft.Data.SqlClient;
     using BeerTap.Models;
+    using Microsoft.IdentityModel.Tokens;
 
     public class UserRepository
     {
         private readonly string sqlConnectionString;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(string sqlConnectionString)
+        public UserRepository(string sqlConnectionString, ILogger<UserRepository> logger)
         {
             this.sqlConnectionString = sqlConnectionString;
+            _logger = logger;
         }
 
         public async Task<User?> CreateUserAsync(string userId, string? pin)
         {
-            if (userId == null)
-                return null;
+
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
                 // Check if the user already exists
@@ -28,15 +30,26 @@
                 // If the user exists, return it
                 if (existingUser != null)
                 {
-                    return existingUser;
+                    return null;
                 }
 
-                // If the user does not exist, create the user
-                string? pinHash = pin != null ? HashPin(pin) : null;
+                var user = new User
+                {
+                    ID = Guid.NewGuid(),
+                    UserId = userId,
+                    PinHash = pin != null ? HashPin(pin) : null,
+                    Score = 0,
+                    Credits = 0,
+                    AmountTapped = 0
+                };
 
-                var insertSql = "INSERT INTO Users (UserId, PinHash) VALUES (@UserId, @PinHash)";
-                await sqlConnection.ExecuteAsync(insertSql, new { UserId = userId, PinHash = pinHash });
+                var insertSql = @"INSERT INTO Users (ID, UserId, PinHash, Score, Credits, AmountTapped) 
+                      VALUES (@ID, @UserId, @PinHash, @Score, @Credits, @AmountTapped)";
 
+                //using var sqlConnection = new SqlConnection(_connectionString);
+                await sqlConnection.ExecuteAsync(insertSql, user);
+
+                return user;
                 // Retrieve and return the newly created user
                 var newUser = await sqlConnection.QuerySingleAsync<User>(@"
                     SELECT * FROM Users 
@@ -46,28 +59,85 @@
                 return newUser;
             }
         }
-
-
         public async Task<User?> GetUserAsync(string userId)
         {
-            if (userId == null)
+            if (userId.IsNullOrEmpty())
                 return null;
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                // Check if the user already exists
-                var existingUser = await sqlConnection.QuerySingleOrDefaultAsync<User>(@"
+                var user = await sqlConnection.QuerySingleOrDefaultAsync<User>(@"
                     SELECT * FROM Users 
                     WHERE UserId = @UserId",
                     new { UserId = userId });
-                return existingUser;
+                return user;
             }
         }
 
-        public async Task<bool> ValidateUserAsync(string userId, string? pin)
+        //public async Task<User?> GetUserAsync(Guid id)
+        //{
+        //    if (id == Guid.Empty)
+        //        return null;
+        //    using (var sqlConnection = new SqlConnection(sqlConnectionString))
+        //    {
+        //        var existingUser = await sqlConnection.QuerySingleOrDefaultAsync<User>(@"
+        //            SELECT * FROM Users 
+        //            WHERE ID = @ID",
+        //            new { ID = id });
+        //        return existingUser;
+        //    }
+        //}
+        public async Task<User?> GetUserAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user with ID: {UserId}", id);
+
+                using var sqlConnection = new SqlConnection(sqlConnectionString);
+
+                var result = await sqlConnection.QuerySingleOrDefaultAsync(
+                    "SELECT ID, UserId FROM Users WHERE ID = @ID", new { ID = id });
+
+                var user = await sqlConnection.QuerySingleOrDefaultAsync<User>(
+                    @"SELECT 
+                        ID as ID,
+                        UserId as UserId,
+                        PinHash as PinHash,
+                        Score as Score,
+                        Credits as Credits,
+                        AmountTapped as AmountTapped
+                      FROM Users
+                      WHERE ID = @ID", new { ID = id });
+
+
+                if (user != null)
+                {
+                    _logger.LogInformation("User found: {UserId}", user.UserId);
+                }
+                else
+                {
+                    _logger.LogWarning("User not found with ID: {UserId}", id);
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching user with ID: {UserId}", id);
+                throw;
+            }
+        }
+
+
+        public async Task<bool> ValidateUserAsync(Guid id, string userId, string? pin, string? pinHash)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                var pinHash = await sqlConnection.QuerySingleOrDefaultAsync<string?>("SELECT PinHash FROM Users WHERE UserId = @UserId", new { UserId = userId });
+                //return false;
+                _logger.LogInformation($"Looking validating pin for user: {id}");
+                //var user = await GetUserAsync(id);
+                //var pinHash = user.PinHash;
+                //var pinHash = await sqlConnection.QuerySingleOrDefaultAsync<string?>("SELECT PinHash FROM Users WHERE ID = @ID", new { ID = id });
+                //Console.WriteLine($"Connection state: {sqlConnection.State}");
 
                 if (pinHash == null && pin == null) return true;
                 if (pinHash != null && pin != null) return VerifyPin(pin, pinHash);

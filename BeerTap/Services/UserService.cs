@@ -1,74 +1,132 @@
-﻿using BeerTap.Models;
+﻿using Azure.Core;
+using BeerTap.Models;
 using BeerTap.Repositories;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Extensions.Logging;
 
 namespace BeerTap.Services
 {
+
     public class UserService
     {
+        private readonly ILogger<UserService> _logger;
         private readonly UserRepository _repo;
         private readonly ProtectedSessionStorage _sessionStorage;
+        private readonly TapQueueManager _tapQueueManager;
+
+        public bool IsAuthenticated = false;
         public User? _user { get; private set; }
 
-        public bool IsAuthenticated => _user != null && !string.IsNullOrEmpty(_user.UserId);
-
-
-        public UserService(UserRepository repo, ProtectedSessionStorage sessionStorage)
+        public UserService(
+            UserRepository repo,
+            ProtectedSessionStorage sessionStorage,
+            TapQueueManager tapQueueManager,
+            ILogger<UserService> logger)
         {
             _repo = repo;
             _sessionStorage = sessionStorage;
+            _tapQueueManager = tapQueueManager;
+            _logger = logger;
         }
-
-        // Database methods
-        public Task<User> CreateUser(string userId, string? pin)
-        {
-            return _repo.CreateUserAsync(userId, pin);
-        }
-
-        public Task<bool> ValidateCredentials(string userId, string? pin) => _repo.ValidateUserAsync(userId, pin);
         public Task<int> GetScore(string userId) => _repo.GetUserScoreAsync(userId);
         public Task UpdateScore(string userId, int score) => _repo.UpdateUserScoreAsync(userId, score);
+
         public async Task<bool> SignInAsync(string userId, string? pin)
         {
+            _logger.LogInformation("Attempting to sign in user: {UserId}", userId);
             if (string.IsNullOrEmpty(userId))
                 return false;
 
-            if (await ValidateCredentials(userId, pin))
+            var tmpUser = await _repo.GetUserAsync(userId);
+            var valid = false;
+            if (tmpUser != null)
             {
-                _user = await _repo.GetUserAsync(userId);
+                _logger.LogInformation("User found in DB: {UserId}", tmpUser.UserId);
+                valid = await _repo.ValidateUserAsync(tmpUser.ID, tmpUser.UserId, pin, tmpUser.PinHash);
             }
-            else
+
+            IsAuthenticated = valid;
+
+            if (IsAuthenticated)
             {
-                _user = await CreateUser(userId, pin);
+                _user = tmpUser;
+                _logger.LogInformation("User authenticated and loaded into service: {UserId}", _user?.UserId);
             }
 
             if (_user != null)
             {
-                await _sessionStorage.SetAsync("userId", _user.UserId);
+                await _sessionStorage.SetAsync("userId", _user.ID);
                 return true;
+            }
+
+            _logger.LogWarning("Sign-in failed for user: {UserId}", userId);
+            return false;
+        }
+
+        public async Task SignOut()
+        {
+            _logger.LogInformation("Signing out user. Current user is: {UserId}", _user?.UserId ?? "null");
+
+            if (_user != null)
+            {
+                await _tapQueueManager.DequeueUserFromAllTaps(_user.UserId);
+                _logger.LogInformation("User dequeued: {UserId}", _user.UserId);
+            }
+
+            _user = null;
+            IsAuthenticated = false;
+            await _sessionStorage.DeleteAsync("userId");
+
+            _logger.LogInformation("Session data cleared.");
+        }
+
+        public async Task<bool> TryRestoreSessionAsync()
+        {
+            _logger.LogInformation("Attempting to restore session...");
+            var result = await _sessionStorage.GetAsync<Guid>("userId");
+
+            if (result.Success && result.Value != Guid.Empty)
+            {
+                var user = await _repo.GetUserAsync(result.Value);
+                if (user != null)
+                {
+                    _user = user;
+                    _logger.LogInformation("Session restored for user: {UserId}", user.UserId);
+                    return true;
+                }
+                _logger.LogWarning("No user found for stored session ID: {UserId}", result.Value);
+            }
+            else
+            {
+                _logger.LogWarning("No valid session found.");
             }
 
             return false;
         }
 
+        public async Task<bool> SignUpAsync(string userId, string? pin)
+        {
+            _logger.LogInformation("Attempting to sign up user: {UserId}", userId);
 
-        public async Task SignOut()
-        {
-            _user = null;
-            await _sessionStorage.DeleteAsync("userId");
-        }
-        public async Task TryRestoreSessionAsync()
-        {
-            var result = await _sessionStorage.GetAsync<string>("userId");
-            if (result.Success && !string.IsNullOrEmpty(result.Value))
+            if (string.IsNullOrEmpty(userId))
             {
-                var user = await _repo.GetUserAsync(result.Value);
-                if (user != null)
-                    _user = user;
+                _logger.LogWarning("Sign-up failed: User ID was null or empty.");
+                return false;
             }
+
+            _user = await _repo.CreateUserAsync(userId, pin);
+
+            if (_user != null)
+            {
+                _logger.LogInformation("User created successfully: {UserId}", _user.UserId);
+                await _sessionStorage.SetAsync("userId", _user.ID);
+                _logger.LogInformation("Session stored for new user: {UserId}", _user.UserId);
+                return true;
+            }
+
+            _logger.LogError("Sign-up failed: Repository returned null for user creation.");
+            return false;
         }
-
-
 
     }
 }

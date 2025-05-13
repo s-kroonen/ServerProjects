@@ -3,12 +3,12 @@ namespace BeerTap.Models
 {
     public class User
     {
-        public int Id { get; set; }
-
         [Required]
-        [MaxLength(3)]
-        public string UserId { get; set; }
+        public Guid ID { get; set; }
+        public required string UserId { get; set; }
         public string? PinHash { get; set; }
         public int Score { get; set; }
+        public float Credits { get; set; }
+        public float AmountTapped { get; set; }
     }
 }

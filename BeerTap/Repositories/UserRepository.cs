@@ -128,16 +128,11 @@
         }
 
 
-        public async Task<bool> ValidateUserAsync(Guid id, string userId, string? pin, string? pinHash)
+        public async Task<bool> ValidateUserAsync(string userId, string? pin, string? pinHash)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                //return false;
-                _logger.LogInformation($"Looking validating pin for user: {id}");
-                //var user = await GetUserAsync(id);
-                //var pinHash = user.PinHash;
-                //var pinHash = await sqlConnection.QuerySingleOrDefaultAsync<string?>("SELECT PinHash FROM Users WHERE ID = @ID", new { ID = id });
-                //Console.WriteLine($"Connection state: {sqlConnection.State}");
+                _logger.LogInformation($"Looking validating pin for user: {userId}");
 
                 if (pinHash == null && pin == null) return true;
                 if (pinHash != null && pin != null) return VerifyPin(pin, pinHash);
@@ -163,6 +158,50 @@
                 await sqlConnection.ExecuteAsync(sql, new { UserId = userId, Score = newScore });
             }
         }
+
+        public async Task<bool> UpdateUserAccountAsync(Guid id, string newUserId, string? newPin)
+        {
+            using var sqlConnection = new SqlConnection(sqlConnectionString);
+
+            try
+            {
+                _logger.LogInformation("Attempting to update user {UserId}", id);
+
+                string sql;
+                object parameters;
+
+                if (string.IsNullOrWhiteSpace(newPin))
+                {
+                    sql = @"UPDATE Users SET UserId = @UserId WHERE ID = @ID";
+                    parameters = new { ID = id, UserId = newUserId };
+                }
+                else
+                {
+                    var newHash = HashPin(newPin);
+                    sql = @"UPDATE Users SET UserId = @UserId, PinHash = @PinHash WHERE ID = @ID";
+                    parameters = new { ID = id, UserId = newUserId, PinHash = newHash };
+                }
+
+                int affectedRows = await sqlConnection.ExecuteAsync(sql, parameters);
+
+                if (affectedRows > 0)
+                {
+                    _logger.LogInformation("User {UserId} updated successfully", id);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("User update affected 0 rows for {UserId}", id);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while updating user account for {UserId}", id);
+                return false;
+            }
+        }
+
 
         private string HashPin(string pin)
         {

@@ -1,5 +1,134 @@
-﻿<h3>Account</h3>
+﻿@page "/account"
+@using BeerTap.Models
+@inject BeerTap.Services.UserService UserService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+
+<h3>Account Details</h3>
+
+@if (!UserService.IsAuthenticated || user == null)
+{
+    <p>You are not logged in.</p>
+}
+else
+{
+    <div>
+        <label>User ID: </label>
+        @if (isEditing)
+        {
+            <input @bind="editableUserId" />
+        }
+        else
+        {
+            <span>@user.UserId</span>
+        }
+    </div>
+
+    <div>
+        <label>Score: </label>
+        <span>@user.Score</span>
+    </div>
+
+    <div>
+        <label>Credits: </label>
+        <span>@user.Credits</span>
+    </div>
+
+    @if (isEditing)
+    {
+        <div>
+            <label>New PIN (optional): </label>
+            <input type="password" @bind="newPin" />
+        </div>
+        <div>
+            <label>Confirm Current PIN: </label>
+            <input type="password" @bind="currentPin" />
+        </div>
+        <button @onclick="SaveChanges">Save</button>
+        <button @onclick="CancelEdit">Cancel</button>
+    }
+    else
+    {
+        <button @onclick="EnableEdit">Edit</button>
+    }
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <p>@message</p>
+    }
+}
 
 @code {
 
+    private User user;
+    private string editableUserId = string.Empty;
+    private string? newPin;
+    private string? currentPin;
+    private bool isEditing = false;
+    private string message = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserService.TryRestoreSessionAsync();
+            if (!UserService.IsAuthenticated)
+            {
+                Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            }
+
+            user = UserService._user;
+            if (user != null)
+            {
+                editableUserId = user.UserId;
+                StateHasChanged();
+            }
+        }
+    }
+    private void EnableEdit()
+    {
+        isEditing = true;
+        newPin = user.PinHash;
+        currentPin = null;
+        message = "";
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        editableUserId = user?.UserId ?? "";
+        message = "";
+    }
+
+    private async Task SaveChanges()
+    {
+        if (string.IsNullOrWhiteSpace(currentPin))
+        {
+            message = "Please enter your current PIN to confirm changes.";
+            return;
+        }
+
+        if (user == null)
+            return;
+
+        var valid = await UserService.ValidateUser(user.UserId,currentPin);
+        if (!valid)
+        {
+            message = "Incorrect current PIN.";
+            return;
+        }
+
+        var success = await UserService.UpdateUserAccount(editableUserId, newPin);
+        if (success)
+        {
+            user = UserService._user;
+            isEditing = false;
+            message = "Account updated successfully.";
+        }
+        else
+        {
+            message = "Failed to update account.";
+        }
+    }
 }

@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
             return Unauthorized("User not found");
 
         var isValid = string.IsNullOrEmpty(user.PinHash) && string.IsNullOrEmpty(dto.Pin)
-            || (!string.IsNullOrEmpty(user.PinHash) && _userRepository.ValidateUserAsync(user.ID, dto.UserId, dto.Pin, user.PinHash).Result);
+            || (!string.IsNullOrEmpty(user.PinHash) && _userRepository.ValidateUserAsync(dto.UserId, dto.Pin, user.PinHash).Result);
 
         return isValid ? Ok("Valid") : Unauthorized("Invalid PIN");
     }

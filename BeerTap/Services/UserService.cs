@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using System.Net.NetworkInformation;
+using Azure.Core;
 using BeerTap.Models;
 using BeerTap.Repositories;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -11,7 +12,7 @@ namespace BeerTap.Services
     {
         private readonly ILogger<UserService> _logger;
         private readonly UserRepository _repo;
-        private readonly ProtectedSessionStorage _sessionStorage;
+        public readonly ProtectedSessionStorage _sessionStorage;
         private readonly TapQueueManager _tapQueueManager;
 
         public bool IsAuthenticated = false;
@@ -42,7 +43,7 @@ namespace BeerTap.Services
             if (tmpUser != null)
             {
                 _logger.LogInformation("User found in DB: {UserId}", tmpUser.UserId);
-                valid = await _repo.ValidateUserAsync(tmpUser.ID, tmpUser.UserId, pin, tmpUser.PinHash);
+                valid = await _repo.ValidateUserAsync(userId, pin, tmpUser.PinHash);
             }
 
             IsAuthenticated = valid;
@@ -91,6 +92,7 @@ namespace BeerTap.Services
                 if (user != null)
                 {
                     _user = user;
+                    IsAuthenticated = true;
                     _logger.LogInformation("Session restored for user: {UserId}", user.UserId);
                     return true;
                 }
@@ -99,6 +101,33 @@ namespace BeerTap.Services
             else
             {
                 _logger.LogWarning("No valid session found.");
+            }
+
+            return false;
+        }
+
+        public async Task<bool> ValidateUser(string userId, string? pin)
+        {
+            var tmpUser = await _repo.GetUserAsync(userId);
+            if (tmpUser != null)
+            {
+                _logger.LogInformation("User found in DB: {UserId}", tmpUser.UserId);
+                return await _repo.ValidateUserAsync(userId, pin, tmpUser.PinHash);
+
+            }
+            return false;
+
+        }
+
+        public async Task<bool> UpdateUserAccount(string newUserId, string? newPin)
+        {
+            if (_user == null) return false;
+
+            var updated = await _repo.UpdateUserAccountAsync(_user.ID, newUserId, newPin);
+            if (updated)
+            {
+                _user = await _repo.GetUserAsync(_user.ID);
+                return true;
             }
 
             return false;

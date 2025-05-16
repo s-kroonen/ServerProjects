@@ -44,7 +44,7 @@ else
 @code {
 	[Parameter]
 	public string TapId { get; set; } = string.Empty;
-	private int CurrentAmount = 0;
+	private float CurrentAmount = 0;
 	private string TapStatus = "idle";
 	// private string? UserId;
 	private int QueuePosition;
@@ -117,7 +117,7 @@ else
 		}
 	}
 
-	private void OnAmountChanged(string tap, int amount)
+	private void OnAmountChanged(string tap, float amount)
 	{
 		if (tap == TapId)
 		{

@@ -21,13 +21,13 @@
 
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                // Check if the user already exists
+                // Check if the ID already exists
                 var existingUser = await sqlConnection.QuerySingleOrDefaultAsync<User>(@"
                     SELECT * FROM Users 
                     WHERE UserId = @UserId",
                     new { UserId = userId });
 
-                // If the user exists, return it
+                // If the ID exists, return it
                 if (existingUser != null)
                 {
                     return null;
@@ -50,7 +50,7 @@
                 await sqlConnection.ExecuteAsync(insertSql, user);
 
                 return user;
-                // Retrieve and return the newly created user
+                // Retrieve and return the newly created ID
                 var newUser = await sqlConnection.QuerySingleAsync<User>(@"
                     SELECT * FROM Users 
                     WHERE UserId = @UserId",
@@ -90,7 +90,7 @@
         {
             try
             {
-                _logger.LogInformation("Fetching user with ID: {UserId}", id);
+                _logger.LogInformation("Fetching ID with ID: {UserId}", id);
 
                 using var sqlConnection = new SqlConnection(sqlConnectionString);
 
@@ -122,7 +122,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching user with ID: {UserId}", id);
+                _logger.LogError(ex, "Error occurred while fetching ID with ID: {UserId}", id);
                 throw;
             }
         }
@@ -132,7 +132,7 @@
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                _logger.LogInformation($"Looking validating pin for user: {userId}");
+                _logger.LogInformation($"Looking validating pin for ID: {userId}");
 
                 if (pinHash == null && pin == null) return true;
                 if (pinHash != null && pin != null) return VerifyPin(pin, pinHash);
@@ -141,21 +141,43 @@
             }
         }
 
-        public async Task<int> GetUserScoreAsync(string userId)
+        public async Task<int> GetUserScoreAsync(Guid ID)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                var sql = "SELECT Score FROM Users WHERE UserId = @UserId";
-                return await sqlConnection.QuerySingleOrDefaultAsync<int>(sql, new { UserId = userId });
+                var sql = "SELECT Score FROM Users WHERE ID = @ID";
+                return await sqlConnection.QuerySingleOrDefaultAsync<int>(sql, new { ID });
             }
         }
 
-        public async Task UpdateUserScoreAsync(string userId, float newScore)
+        public async Task UpdateUserScoreAsync(Guid ID, float newScore)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {
-                var sql = "UPDATE Users SET Score = @Score WHERE UserId = @UserId";
-                await sqlConnection.ExecuteAsync(sql, new { UserId = userId, Score = newScore });
+                _logger.LogInformation("Attempting to update ID {UserId} with score {amount}", ID, newScore);
+
+                var sql = "UPDATE Users SET Score = @Score WHERE ID = @ID";
+                await sqlConnection.ExecuteAsync(sql, new { ID, Score = newScore });
+            }
+        }
+
+        public async Task<int> GetUserAmountTappedAsync(Guid ID)
+        {
+            using (var sqlConnection = new SqlConnection(sqlConnectionString))
+            {
+                var sql = "SELECT AmountTapped FROM Users WHERE ID = @ID";
+                return await sqlConnection.QuerySingleOrDefaultAsync<int>(sql, new { ID });
+            }
+        }
+
+        public async Task UpdateUserAmountTappedAsync(Guid ID, float newAmount)
+        {
+            using (var sqlConnection = new SqlConnection(sqlConnectionString))
+            {
+                _logger.LogInformation("Attempting to update ID {UserId} with amount {amount}", ID, newAmount);
+
+                var sql = "UPDATE Users SET AmountTapped = @AmountTapped WHERE ID = @ID";
+                await sqlConnection.ExecuteAsync(sql, new { ID, AmountTapped = newAmount });
             }
         }
 
@@ -165,7 +187,7 @@
 
             try
             {
-                _logger.LogInformation("Attempting to update user {UserId}", id);
+                _logger.LogInformation("Attempting to update ID {UserId}", id);
 
                 string sql;
                 object parameters;
@@ -197,7 +219,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while updating user account for {UserId}", id);
+                _logger.LogError(ex, "Error while updating ID account for {UserId}", id);
                 return false;
             }
         }

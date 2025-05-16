@@ -29,8 +29,22 @@ namespace BeerTap.Services
             _tapQueueManager = tapQueueManager;
             _logger = logger;
         }
-        public Task<int> GetScore(string userId) => _repo.GetUserScoreAsync(userId);
-        public Task UpdateScore(string userId, float score) => _repo.UpdateUserScoreAsync(userId, score);
+        public Task<int> GetScore(string userId) => _repo.GetUserScoreAsync(_user.ID);
+
+        public Task UpdateScore(string userId, int newScore)
+        {
+            _user.Score = newScore;
+            return _repo.UpdateUserScoreAsync(_user.ID, newScore);
+        }
+
+        public Task<int> GetAmountTapped(string userId) => _repo.GetUserAmountTappedAsync(_user.ID);
+
+        public Task UpdateAmountTapped(string userId, float amount)
+        {
+            _user.AmountTapped = amount;
+            return _repo.UpdateUserAmountTappedAsync(_user.ID, amount);
+        }
+
         public async void AddAmount(string userId, float amount)
         {
             if (userId == null)
@@ -38,9 +52,10 @@ namespace BeerTap.Services
             if (amount <= 0)
                 return;
 
-            float oldScore = await GetScore(userId);
+            _logger.LogInformation("Adding {Amount} to user {UserId}", amount, userId);
+            float oldScore = await GetAmountTapped(userId);
             float newScore = oldScore + amount;
-            await UpdateScore(userId, newScore);
+            await UpdateAmountTapped(userId, newScore);
         }
 
         public async Task<bool> SignInAsync(string userId, string? pin)

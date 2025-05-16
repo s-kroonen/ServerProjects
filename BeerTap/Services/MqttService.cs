@@ -149,8 +149,8 @@ namespace BeerTap.Services
                     if (_lastAmounts.TryGetValue(tapId, out float current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
                     {
                         _logger.LogInformation("Tap {TapId} finished pouring.", tapId);
-                        await _tapQueueManager.DequeueUser(tapId);
                         await PublishTapCommand(tapId, "done");
+                        await _tapQueueManager.DequeueUser(tapId);
                         break;
                     }
                     lastAmount = current;

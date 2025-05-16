@@ -65,10 +65,10 @@ public class UsersController : ControllerBase
 
 
     // PUT: api/users/{userId}/score
-    [HttpPut("{userId}/score")]
-    public async Task<IActionResult> UpdateScore(string userId, [FromBody] int newScore)
+    [HttpPut("{id:guid}/score")]
+    public async Task<IActionResult> UpdateScore(Guid id, [FromBody] int newScore)
     {
-        await _userRepository.UpdateUserScoreAsync(userId, newScore);
+        await _userRepository.UpdateUserScoreAsync(id, newScore);
         return NoContent();
     }
 }

@@ -20,13 +20,16 @@ namespace BeerTap.Services
         private readonly Dictionary<string, string> _CurrentStatuses = new();
         private readonly Dictionary<string, CancellationTokenSource> _watchdogTokens = new();
 
+        private const int amountTimeout = 5000;
+        private const int statusTimeout = 1000;
+
+
         private readonly string _topicPrefix = "beer/tap/";
         private readonly string _clientId = "TapApi";
         private readonly string _host = "kroon-en.nl";
         private readonly int _port = 8883;
         private readonly string _username = "public";
         private readonly string _password = "temp-01";
-        private const int Timeout = 5000;
 
         public MqttService(TapQueueManager tapQueueManager, ILogger<MqttService> logger)
         {
@@ -64,6 +67,7 @@ namespace BeerTap.Services
                 {
                     _CurrentStatuses[tapId] = payload;
                     OnStatusUpdated?.Invoke(tapId, payload);
+                    StartStatusMonitor(tapId);
                 }
 
                 await Task.CompletedTask;
@@ -139,7 +143,7 @@ namespace BeerTap.Services
                 float lastAmount = _lastAmounts[tapId];
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(Timeout, cts.Token);
+                    await Task.Delay(statusTimeout, cts.Token);
                     if (_lastAmounts.TryGetValue(tapId, out float current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
                     {
                         _logger.LogInformation("Tap {TapId} finished pouring.", tapId);
@@ -148,6 +152,33 @@ namespace BeerTap.Services
                         break;
                     }
                     lastAmount = current;
+                }
+            }, cts.Token);
+        }
+
+        private void StartStatusMonitor(string tapId)
+        {
+            if (_watchdogTokens.TryGetValue(tapId, out var oldToken))
+            {
+                oldToken.Cancel();
+            }
+
+            var cts = new CancellationTokenSource();
+            _watchdogTokens[tapId] = cts;
+            _ = Task.Run(async () =>
+            {
+                string lastStatus = _CurrentStatuses[tapId];
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(amountTimeout, cts.Token);
+                    if (_CurrentStatuses.TryGetValue(tapId, out string current) && current == lastStatus)
+                    {
+                        _logger.LogInformation("Tap {TapId} reset to idle.", tapId);
+                        await _tapQueueManager.DequeueUser(tapId);
+                        await PublishTapCommand(tapId, "reset");
+                        break;
+                    }
+                    lastStatus = current;
                 }
             }, cts.Token);
         }

@@ -82,6 +82,10 @@ else
 	{
 		QueuePosition = TapQueueManager.GetUserPosition(TapId, UserService._user.UserId);
 		StateHasChanged();
+		if(QueuePosition == 0)
+		{
+			MqttService.PublishTapCommand(TapId, "reset");
+		}
 	}
 
 	private async Task PourBeer()

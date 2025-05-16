@@ -18,7 +18,9 @@ namespace BeerTap.Services
 
         private readonly Dictionary<string, float> _lastAmounts = new();
         private readonly Dictionary<string, string> _CurrentStatuses = new();
-        private readonly Dictionary<string, CancellationTokenSource> _watchdogTokens = new();
+        private readonly Dictionary<string, CancellationTokenSource> _amountWatchdogTokens = new();
+        private readonly Dictionary<string, CancellationTokenSource> _statusWatchdogTokens = new();
+
 
         private const int amountTimeout = 5000;
         private const int statusTimeout = 1000;
@@ -131,19 +133,19 @@ namespace BeerTap.Services
 
         private void StartAmountMonitor(string tapId)
         {
-            if (_watchdogTokens.TryGetValue(tapId, out var oldToken))
+            if (_amountWatchdogTokens.TryGetValue(tapId, out var oldToken))
             {
                 oldToken.Cancel();
             }
 
             var cts = new CancellationTokenSource();
-            _watchdogTokens[tapId] = cts;
+            _amountWatchdogTokens[tapId] = cts;
             _ = Task.Run(async () =>
             {
                 float lastAmount = _lastAmounts[tapId];
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(statusTimeout, cts.Token);
+                    await Task.Delay(amountTimeout, cts.Token);
                     if (_lastAmounts.TryGetValue(tapId, out float current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
                     {
                         _logger.LogInformation("Tap {TapId} finished pouring.", tapId);
@@ -158,19 +160,19 @@ namespace BeerTap.Services
 
         private void StartStatusMonitor(string tapId)
         {
-            if (_watchdogTokens.TryGetValue(tapId, out var oldToken))
+            if (_statusWatchdogTokens.TryGetValue(tapId, out var oldToken))
             {
                 oldToken.Cancel();
             }
 
             var cts = new CancellationTokenSource();
-            _watchdogTokens[tapId] = cts;
+            _statusWatchdogTokens[tapId] = cts;
             _ = Task.Run(async () =>
             {
                 string lastStatus = _CurrentStatuses[tapId];
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(amountTimeout, cts.Token);
+                    await Task.Delay(statusTimeout, cts.Token);
                     if (_CurrentStatuses.TryGetValue(tapId, out string current) && current == lastStatus && current == "done")
                     {
                         _logger.LogInformation("Tap {TapId} reset to idle.", tapId);

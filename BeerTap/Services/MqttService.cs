@@ -171,7 +171,7 @@ namespace BeerTap.Services
                 while (!cts.Token.IsCancellationRequested)
                 {
                     await Task.Delay(amountTimeout, cts.Token);
-                    if (_CurrentStatuses.TryGetValue(tapId, out string current) && current == lastStatus)
+                    if (_CurrentStatuses.TryGetValue(tapId, out string current) && current == lastStatus && current == "done")
                     {
                         _logger.LogInformation("Tap {TapId} reset to idle.", tapId);
                         await _tapQueueManager.DequeueUser(tapId);

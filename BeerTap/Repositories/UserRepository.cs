@@ -150,7 +150,7 @@
             }
         }
 
-        public async Task UpdateUserScoreAsync(string userId, int newScore)
+        public async Task UpdateUserScoreAsync(string userId, float newScore)
         {
             using (var sqlConnection = new SqlConnection(sqlConnectionString))
             {

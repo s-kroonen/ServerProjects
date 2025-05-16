@@ -82,7 +82,7 @@ else
 	{
 		QueuePosition = TapQueueManager.GetUserPosition(TapId, UserService._user.UserId);
 		StateHasChanged();
-		if(QueuePosition == 0)
+		if (QueuePosition == 0)
 		{
 			MqttService.PublishTapCommand(TapId, "reset");
 		}
@@ -93,7 +93,7 @@ else
 		Console.WriteLine("PourStart");
 		// QueueManager.DequeueUser(TapId);
 		MqttService.PublishTapCommand(TapId, "start");
-		UpdateQueueInfo();
+		// UpdateQueueInfo();
 	}
 
 	private Task Cancel()
@@ -135,6 +135,10 @@ else
 		if (tap == TapId)
 		{
 			TapStatus = status;
+			if (TapStatus == "done")
+			{
+				UserService.AddAmount(UserService._user.UserId, CurrentAmount);
+			}
 			InvokeAsync(StateHasChanged);
 		}
 	}

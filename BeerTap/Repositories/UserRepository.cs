@@ -134,7 +134,7 @@
             {
                 _logger.LogInformation($"Looking validating pin for ID: {userId}");
 
-                if (pinHash == null && pin == null) return true;
+                if (pinHash == null && String.IsNullOrEmpty(pin)) return true;
                 if (pinHash != null && pin != null) return VerifyPin(pin, pinHash);
 
                 return false;
@@ -192,14 +192,16 @@
                 string sql;
                 object parameters;
 
-                if (string.IsNullOrWhiteSpace(newPin))
+                if (newPin == "")
                 {
                     sql = @"UPDATE Users SET UserId = @UserId WHERE ID = @ID";
                     parameters = new { ID = id, UserId = newUserId };
                 }
                 else
                 {
-                    var newHash = HashPin(newPin);
+                    string? newHash = null;
+                    if (newPin != null)
+                        newHash = HashPin(newPin);
                     sql = @"UPDATE Users SET UserId = @UserId, PinHash = @PinHash WHERE ID = @ID";
                     parameters = new { ID = id, UserId = newUserId, PinHash = newHash };
                 }

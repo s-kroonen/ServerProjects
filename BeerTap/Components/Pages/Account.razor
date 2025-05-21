@@ -31,7 +31,7 @@ else
     </div>
     <div>
         <label>Amount Total: </label>
-        <span>@user.AmountTapped</span>
+        <span>@(user.AmountTapped / 1000) L</span>
     </div>
 
     <div>
@@ -42,10 +42,22 @@ else
     @if (isEditing)
     {
         <div>
-            <label>New PIN (optional): </label>
-            <input type="password" @bind="newPin" />
+            @if (!enablePin)
+            {
+                <button @onclick="EnablePin">Enable Pin</button>
+            }
+            @if (enablePin)
+            {
+                <button @onclick="EnablePin">Disable Pin</button>
+            }
+            @if (enablePin)
+            {
+                <label>New PIN (optional): </label>
+                <input type="password" @bind="newPin" />
+            }
         </div>
         <div>
+
             <label>Confirm Current PIN: </label>
             <input type="password" @bind="currentPin" />
         </div>
@@ -70,6 +82,7 @@ else
     private string? newPin;
     private string? currentPin;
     private bool isEditing = false;
+    private bool enablePin = false;
     private string message = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -97,6 +110,16 @@ else
         currentPin = null;
         message = "";
     }
+    private void EnablePin()
+    {
+        enablePin = !enablePin;
+        if (enablePin)
+            newPin = "";
+        else
+            newPin = null;
+        currentPin = null;
+        message = "";
+    }
 
     private void CancelEdit()
     {
@@ -107,16 +130,16 @@ else
 
     private async Task SaveChanges()
     {
-        if (string.IsNullOrWhiteSpace(currentPin))
-        {
-            message = "Please enter your current PIN to confirm changes.";
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(currentPin))
+        // {
+        //     message = "Please enter your current PIN to confirm changes.";
+        //     return;
+        // }
 
         if (user == null)
             return;
 
-        var valid = await UserService.ValidateUser(user.UserId,currentPin);
+        var valid = await UserService.ValidateUser(user.UserId, currentPin);
         if (!valid)
         {
             message = "Incorrect current PIN.";

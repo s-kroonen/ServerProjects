@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using BeerTap.Repositories;
 using BeerTap.Models;
 
@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
             return Unauthorized("User not found");
 
         var isValid = string.IsNullOrEmpty(user.PinHash) && string.IsNullOrEmpty(dto.Pin)
-            || (!string.IsNullOrEmpty(user.PinHash) && _userRepository.ValidateUserAsync(user.ID, dto.UserId, dto.Pin, user.PinHash).Result);
+            || (!string.IsNullOrEmpty(user.PinHash) && _userRepository.ValidateUserAsync(dto.UserId, dto.Pin, user.PinHash).Result);
 
         return isValid ? Ok("Valid") : Unauthorized("Invalid PIN");
     }
@@ -65,10 +65,10 @@ public class UsersController : ControllerBase
 
 
     // PUT: api/users/{userId}/score
-    [HttpPut("{userId}/score")]
-    public async Task<IActionResult> UpdateScore(string userId, [FromBody] int newScore)
+    [HttpPut("{id:guid}/score")]
+    public async Task<IActionResult> UpdateScore(Guid id, [FromBody] int newScore)
     {
-        await _userRepository.UpdateUserScoreAsync(userId, newScore);
+        await _userRepository.UpdateUserScoreAsync(id, newScore);
         return NoContent();
     }
 }

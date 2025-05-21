@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "BeerTap&sim",
+    "Projects": [
+      {
+        "Path": "BeerTap\\BeerTap.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "BeerTapSimulator\\BeerTapSimulator.pyproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

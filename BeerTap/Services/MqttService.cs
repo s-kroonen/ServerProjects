@@ -1,30 +1,42 @@
-﻿
-using MQTTnet;
+﻿using MQTTnet;
 using MQTTnet.Protocol;
 using System.Text;
+using Microsoft.Extensions.Logging;
+
 namespace BeerTap.Services
 {
     public class MqttService : IHostedService
     {
-        private const int Timeout = 5000;
         public List<string> TapIds = new() { "1", "2" };
 
         private IMqttClient _mqttClient;
         private readonly TapQueueManager _tapQueueManager;
-        public event Action<string, int>? OnAmountUpdated;
+        private readonly ILogger<MqttService> _logger;
+
+        public event Action<string, float>? OnAmountUpdated;
         public event Action<string, string>? OnStatusUpdated;
+
+        private readonly Dictionary<string, float> _lastAmounts = new();
+        private readonly Dictionary<string, string> _CurrentStatuses = new();
+        private readonly Dictionary<string, CancellationTokenSource> _amountWatchdogTokens = new();
+        private readonly Dictionary<string, CancellationTokenSource> _statusWatchdogTokens = new();
+
+
+        private const int amountTimeout = 5000;
+        private const int statusTimeout = 1000;
+
 
         private readonly string _topicPrefix = "beer/tap/";
         private readonly string _clientId = "TapApi";
-        //private readonly string _host = "wall-e";
-        //private readonly int _port = 1883;
         private readonly string _host = "kroon-en.nl";
         private readonly int _port = 8883;
         private readonly string _username = "public";
         private readonly string _password = "temp-01";
-        public MqttService(TapQueueManager tapQueueManager)
+
+        public MqttService(TapQueueManager tapQueueManager, ILogger<MqttService> logger)
         {
             _tapQueueManager = tapQueueManager;
+            _logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -35,11 +47,11 @@ namespace BeerTap.Services
                 await AnnounceCurrentUser(tapId, userId);
             };
 
-
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+                _logger.LogDebug("Received MQTT message: Topic={Topic}, Payload={Payload}", topic, payload);
 
                 var segments = topic.Split('/');
                 if (segments.Length < 4) return;
@@ -47,32 +59,29 @@ namespace BeerTap.Services
                 var tapId = segments[2];
                 var type = segments[3];
 
-                if (type == "amount" && int.TryParse(payload, out int amount))
+                if (type == "amount" && float.TryParse(payload, out float amount))
                 {
                     _lastAmounts[tapId] = amount;
                     OnAmountUpdated?.Invoke(tapId, amount);
                     StartAmountMonitor(tapId);
                 }
-                else if (type == "status" )
+                else if (type == "status")
                 {
                     _CurrentStatuses[tapId] = payload;
                     OnStatusUpdated?.Invoke(tapId, payload);
+                    StartStatusMonitor(tapId);
                 }
 
                 await Task.CompletedTask;
             };
 
-
-            Console.WriteLine("MQTT service started");
-
+            _logger.LogInformation("MQTT service started");
         }
-
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Clean_Disconnect();
         }
-
 
         public async Task SubscribeToTap(string tapId)
         {
@@ -80,14 +89,14 @@ namespace BeerTap.Services
             await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
                 .WithTopic(topic)
                 .Build());
-            Console.WriteLine($"Subscribed to:{topic}");
+            _logger.LogInformation("Subscribed to: {Topic}", topic);
         }
 
         public async Task PublishTapCommand(string tapId, string message)
         {
             if (_mqttClient is null || !_mqttClient.IsConnected)
             {
-                Console.WriteLine("MQTT client not ready, skipping publish");
+                _logger.LogWarning("MQTT client not ready, skipping publish");
                 return;
             }
 
@@ -100,9 +109,8 @@ namespace BeerTap.Services
                 .Build();
 
             await _mqttClient.PublishAsync(mqttMessage);
-            Console.WriteLine($"Published to: {topic} with message: {message}");
+            _logger.LogInformation("Published to: {Topic} with message: {Message}", topic, message);
         }
-
 
         public async Task AnnounceCurrentUser(string tapId, string userId)
         {
@@ -114,38 +122,35 @@ namespace BeerTap.Services
             if (_mqttClient?.IsConnected == true)
             {
                 await _mqttClient.PublishAsync(message);
-                Console.WriteLine($"Published current user {userId} to tap {tapId}");
-                if(userId == "")
+                _logger.LogInformation("Published current user {UserId} to tap {TapId}", userId, tapId);
+
+                if (userId == "")
                 {
-                    PublishTapCommand(tapId, "reset");
-                } 
+                    await PublishTapCommand(tapId, "reset");
+                }
             }
         }
 
-        private readonly Dictionary<string, int> _lastAmounts = new();
-        private readonly Dictionary<string, string> _CurrentStatuses= new();
-        private readonly Dictionary<string, CancellationTokenSource> _watchdogTokens = new();
-
         private void StartAmountMonitor(string tapId)
         {
-            if (_watchdogTokens.TryGetValue(tapId, out var oldToken))
+            if (_amountWatchdogTokens.TryGetValue(tapId, out var oldToken))
             {
                 oldToken.Cancel();
             }
 
             var cts = new CancellationTokenSource();
-            _watchdogTokens[tapId] = cts;
+            _amountWatchdogTokens[tapId] = cts;
             _ = Task.Run(async () =>
             {
-                int lastAmount = _lastAmounts[tapId];
+                float lastAmount = _lastAmounts[tapId];
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(Timeout, cts.Token);
-                    if (_lastAmounts.TryGetValue(tapId, out int current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
+                    await Task.Delay(amountTimeout, cts.Token);
+                    if (_lastAmounts.TryGetValue(tapId, out float current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
                     {
-                        Console.WriteLine($"Tap {tapId} finished pouring.");
-                        await _tapQueueManager.DequeueUser(tapId);
+                        _logger.LogInformation("Tap {TapId} finished pouring.", tapId);
                         await PublishTapCommand(tapId, "done");
+                        await _tapQueueManager.DequeueUser(tapId);
                         break;
                     }
                     lastAmount = current;
@@ -153,14 +158,42 @@ namespace BeerTap.Services
             }, cts.Token);
         }
 
+        private void StartStatusMonitor(string tapId)
+        {
+            if (_statusWatchdogTokens.TryGetValue(tapId, out var oldToken))
+            {
+                oldToken.Cancel();
+            }
 
+            var cts = new CancellationTokenSource();
+            _statusWatchdogTokens[tapId] = cts;
+            _ = Task.Run(async () =>
+            {
+                string lastStatus = _CurrentStatuses[tapId];
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(statusTimeout, cts.Token);
+                    if (_CurrentStatuses.TryGetValue(tapId, out string current) && current == lastStatus && current == "done")
+                    {
+                        _logger.LogInformation("Tap {TapId} reset to idle.", tapId);
+                        await _tapQueueManager.DequeueUser(tapId);
+                        await PublishTapCommand(tapId, "reset");
+                        break;
+                    }
+                    lastStatus = current;
+                }
+            }, cts.Token);
+        }
 
         public async Task Clean_Disconnect()
         {
-            await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptionsBuilder().WithReason(MqttClientDisconnectOptionsReason.NormalDisconnection).Build());
+            await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptionsBuilder()
+                .WithReason(MqttClientDisconnectOptionsReason.NormalDisconnection)
+                .Build());
 
-            Console.WriteLine("MQTT disconnected!");
+            _logger.LogInformation("MQTT disconnected!");
         }
+
         public async Task ConnectAsync()
         {
             var mqttFactory = new MqttClientFactory();
@@ -174,8 +207,8 @@ namespace BeerTap.Services
                 .WithTlsOptions(new MqttClientTlsOptions
                 {
                     UseTls = true,
-                    AllowUntrustedCertificates = true, // only if you're using self-signed certs
-                    CertificateValidationHandler = context => true // optionally accept all certs
+                    AllowUntrustedCertificates = true,
+                    CertificateValidationHandler = context => true
                 })
                 .Build();
 
@@ -186,8 +219,7 @@ namespace BeerTap.Services
                 throw new InvalidOperationException($"MQTT connection failed: {response.ResultCode}");
             }
 
-            Console.WriteLine("MQTT connected!");
+            _logger.LogInformation("MQTT connected!");
         }
-
     }
 }

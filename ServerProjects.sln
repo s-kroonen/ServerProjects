@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap-old", "BeerTap-old\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap", "BeerTap\BeerTap.csproj", "{03ED84AB-1340-401A-A164-A233591E8E22}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "BeerTapSimulator", "BeerTapSimulator\BeerTapSimulator.pyproj", "{318A9C3B-F015-44EE-AAE7-1FE26525856B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,8 @@ Global
 		{03ED84AB-1340-401A-A164-A233591E8E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03ED84AB-1340-401A-A164-A233591E8E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03ED84AB-1340-401A-A164-A233591E8E22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{318A9C3B-F015-44EE-AAE7-1FE26525856B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{318A9C3B-F015-44EE-AAE7-1FE26525856B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

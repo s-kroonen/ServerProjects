@@ -96,7 +96,7 @@ namespace BeerTap.Services
 
             if (_user != null)
             {
-                await _tapQueueManager.DequeueUserFromAllTaps(_user.UserId);
+                await _tapQueueManager.DequeueUserFromAllTaps(_user);
                 _logger.LogInformation("User dequeued: {UserId}", _user.UserId);
             }
 

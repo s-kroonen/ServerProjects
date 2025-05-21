@@ -1,4 +1,5 @@
 @page "/tappage/{TapId}"
+@using BeerTap.Models
 @inject BeerTap.Services.TapQueueManager TapQueueManager
 @inject BeerTap.Services.MqttService MqttService
 @inject BeerTap.Services.UserService UserService
@@ -16,7 +17,7 @@ else
 {
 	<p>Welcome, @UserService._user.UserId!</p>
 
-	@if (TapQueueManager.GetUserPosition(TapId, UserService._user.UserId) == -1)
+	@if (TapQueueManager.GetUserPosition(TapId, UserService._user) == -1)
 	{
 		<button class="btn btn-success" @onclick="JoinQueue">Join Queue</button>
 	}
@@ -48,7 +49,7 @@ else
 	private string TapStatus = "idle";
 	// private string? UserId;
 	private int QueuePosition;
-	private bool CanTap => TapQueueManager.IsUserNext(TapId, UserService._user.UserId!);
+	private bool CanTap => TapQueueManager.IsUserNext(TapId, UserService._user);
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
@@ -71,7 +72,7 @@ else
 
 			MqttService.OnAmountUpdated += OnAmountChanged;
 			MqttService.OnStatusUpdated += OnStatusChanged;
-			await TapQueueManager.EnqueueUser(TapId, UserService._user.UserId);
+			await TapQueueManager.EnqueueUser(TapId, UserService._user);
 			TapQueueManager.CurrentUserChanged += OnQueueChanged;
 
 			UpdateQueueInfo();
@@ -80,7 +81,7 @@ else
 
 	private void UpdateQueueInfo()
 	{
-		QueuePosition = TapQueueManager.GetUserPosition(TapId, UserService._user.UserId);
+		QueuePosition = TapQueueManager.GetUserPosition(TapId, UserService._user);
 		StateHasChanged();
 		if (QueuePosition == 0)
 		{
@@ -92,24 +93,24 @@ else
 	{
 		Console.WriteLine("PourStart");
 		// QueueManager.DequeueUser(TapId);
-		MqttService.PublishTapCommand(TapId, "start");
+		await MqttService.PublishTapCommand(TapId, "start");
 		// UpdateQueueInfo();
 	}
 
-	private Task Cancel()
+	private async Task Cancel()
 	{
-		TapQueueManager.Cancel(TapId, UserService._user.UserId);
+		await TapQueueManager.Cancel(TapId, UserService._user);
 		Navigation.NavigateTo("/");
-		return Task.CompletedTask;
+		return;
 	}
 
-	private void JoinQueue()
+	private async void JoinQueue()
 	{
-		TapQueueManager.EnqueueUser(TapId, UserService._user.UserId);
+		await TapQueueManager.EnqueueUser(TapId, UserService._user);
 		UpdateQueueInfo();
 	}
 
-	private void OnQueueChanged(string tap, string user)
+	private void OnQueueChanged(string tap, User user)
 	{
 		if (tap == TapId)
 		{

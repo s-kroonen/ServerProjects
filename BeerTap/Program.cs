@@ -1,7 +1,9 @@
 using BeerTap.Components;
+using BeerTap.Data;
 using BeerTap.Repositories;
 using BeerTap.Services;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionString");
@@ -9,6 +11,10 @@ var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionS
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+// DB context
+builder.Services.AddDbContext<BeerTapContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetValue<string>("SqlConnectionString")));
+
 
 builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<MqttService>();

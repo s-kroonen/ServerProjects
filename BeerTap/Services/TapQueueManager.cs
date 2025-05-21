@@ -11,7 +11,7 @@ namespace BeerTap.Services
         private readonly object _lock = new();
         private readonly IHubContext<TapQueueHub> _hubContext;
 
-        public event Action<string, string>? CurrentUserChanged;
+        public event Action<string, User>? CurrentUserChanged;
 
         public TapQueueManager(IHubContext<TapQueueHub> hubContext, ILogger<TapQueueManager> logger)
         {
@@ -19,7 +19,7 @@ namespace BeerTap.Services
             _logger = logger;
         }
 
-        public async Task EnqueueUser(string tapId, string userId)
+        public async Task EnqueueUser(string tapId, User user)
         {
             bool notify = false;
 
@@ -28,21 +28,21 @@ namespace BeerTap.Services
                 if (!_tapQueues.ContainsKey(tapId))
                     _tapQueues[tapId] = new Queue<TapQueueEntry>();
 
-                if (!_tapQueues[tapId].Any(q => q.UserId == userId))
+                if (!_tapQueues[tapId].Any(q => q.User.ID == user.ID))
                 {
                     _tapQueues[tapId].Enqueue(new TapQueueEntry
                     {
-                        UserId = userId,
+                        User = user,
                         TapId = tapId,
                         QueuedAt = DateTime.UtcNow
                     });
 
-                    _logger.LogInformation($"User {userId} enqueued for tap {tapId}");
+                    _logger.LogInformation($"User {user.UserId} enqueued for tap {tapId}");
 
                     if (_tapQueues[tapId].Count == 1)
                     {
-                        var currentUser = _tapQueues[tapId].Peek();
-                        CurrentUserChanged?.Invoke(tapId, currentUser.UserId);
+                        var currentQueue = _tapQueues[tapId].Peek();
+                        CurrentUserChanged?.Invoke(tapId, currentQueue.User);
                     }
 
                     notify = true;
@@ -63,16 +63,16 @@ namespace BeerTap.Services
                 if (_tapQueues.TryGetValue(tapId, out var queue) && queue.Count > 0)
                 {
                     user = queue.Dequeue();
-                    _logger.LogInformation($"User {user.UserId} dequeued for tap {tapId}");
+                    _logger.LogInformation($"User {user.User.UserId} dequeued for tap {tapId}");
 
                     if (queue.Count > 0)
                     {
-                        var nextUser = queue.Peek();
-                        CurrentUserChanged?.Invoke(tapId, nextUser.UserId);
+                        var nextQueue = queue.Peek();
+                        CurrentUserChanged?.Invoke(tapId, nextQueue.User);
                     }
                     else
                     {
-                        CurrentUserChanged?.Invoke(tapId, "");
+                        CurrentUserChanged?.Invoke(tapId, null);
                     }
 
                     notify = true;
@@ -85,7 +85,7 @@ namespace BeerTap.Services
             return user;
         }
 
-        public async Task DequeueUserFromAllTaps(string userId)
+        public async Task DequeueUserFromAllTaps(User user)
         {
             var tapsToNotify = new List<string>();
 
@@ -98,19 +98,19 @@ namespace BeerTap.Services
 
                     // Filter out all entries for the given user
                     var originalCount = queue.Count;
-                    var filteredQueue = new Queue<TapQueueEntry>(queue.Where(entry => entry.UserId != userId));
+                    var filteredQueue = new Queue<TapQueueEntry>(queue.Where(entry => entry.User.ID != user.ID));
                     if (filteredQueue.Count != originalCount)
                     {
                         _tapQueues[tapId] = filteredQueue;
                         tapsToNotify.Add(tapId);
-                        _logger.LogInformation($"User {userId} dequeued from tap {tapId}");
+                        _logger.LogInformation($"User {user} dequeued from tap {tapId}");
                     }
 
                     // Fire event for current user change if needed
                     if (queue.Count > 0)
                     {
-                        var currentUserId = filteredQueue.Count > 0 ? filteredQueue.Peek().UserId : "";
-                        CurrentUserChanged?.Invoke(tapId, currentUserId);
+                        var currentUser = filteredQueue.Count > 0 ? filteredQueue.Peek().User : null;
+                        CurrentUserChanged?.Invoke(tapId, currentUser);
                     }
                 }
             }
@@ -123,13 +123,13 @@ namespace BeerTap.Services
 
 
 
-        public bool IsUserNext(string tapId, string userId)
+        public bool IsUserNext(string tapId, User user)
         {
             lock (_lock)
             {
-                if (_tapQueues.TryGetValue(tapId, out var queue) && queue.Count > 0)
+                if (_tapQueues.TryGetValue(tapId, out var queue) && queue.Count >= 0)
                 {
-                    return queue.Peek().UserId == userId;
+                    return queue.Peek().User.ID == user.ID;
                 }
 
                 return false;
@@ -146,21 +146,21 @@ namespace BeerTap.Services
             }
         }
 
-        public int GetUserPosition(string tapId, string userId)
+        public int GetUserPosition(string tapId, User user)
         {
             lock (_lock)
             {
                 if (_tapQueues.TryGetValue(tapId, out var queue))
                 {
                     var list = queue.ToList();
-                    return list.FindIndex(entry => entry.UserId == userId);
+                    return list.FindIndex(entry => entry.User.ID == user.ID);
                 }
 
                 return -1;
             }
         }
 
-        public async Task Cancel(string tapId, string userId)
+        public async Task Cancel(string tapId, User userId)
         {
             bool notify = false;
 
@@ -168,10 +168,10 @@ namespace BeerTap.Services
             {
                 if (_tapQueues.TryGetValue(tapId, out var queue))
                 {
-                    if (queue.Count > 0 && queue.Peek().UserId != userId)
+                    if (queue.Count > 0 && queue.Peek().User != userId)
                     {
                         var updatedQueue = new Queue<TapQueueEntry>(
-                            queue.Where(entry => entry.UserId != userId)
+                            queue.Where(entry => entry.User.ID != userId.ID)
                         );
 
                         _tapQueues[tapId] = updatedQueue;
@@ -188,11 +188,11 @@ namespace BeerTap.Services
                         if (queue.Count > 0)
                         {
                             var nextUser = queue.Peek();
-                            CurrentUserChanged?.Invoke(tapId, nextUser.UserId);
+                            CurrentUserChanged?.Invoke(tapId, nextUser.User);
                         }
                         else
                         {
-                            CurrentUserChanged?.Invoke(tapId, "");
+                            CurrentUserChanged?.Invoke(tapId, null);
                             
                         }
                     }

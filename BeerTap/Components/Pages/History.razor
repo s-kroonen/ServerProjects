@@ -19,7 +19,7 @@ else
     @foreach (var session in sessions)
     {
         <button class="btn btn-primary mb-2" @onclick="() => LoadEvents(session)">
-            @session.StartTime.ToString("g") - @session.TotalAmount L
+            @session.StartTime.ToString("g") - @session.TotalAmount mL
         </button>
 
         @if (selectedSessionId == session.Id && tapEvents != null)
@@ -95,7 +95,7 @@ else
 
         var labels = tapEvents
             .OrderBy(e => e.Timestamp)
-            .Select(e => (e.Timestamp - startTime).TotalSeconds.ToString("F0")) // F0 = no decimals
+            .Select(e => (e.Timestamp - startTime).TotalSeconds.ToString("F1")) // F0 = no decimals
             .ToList();
 
 
@@ -111,7 +111,7 @@ else
             {
                 new LineChartDataset
                 {
-                    Label = "Beer Poured (L)",
+                    Label = "Beer Poured (mL)",
                     Data = dataPoints,
                     BackgroundColor = "rgba(88, 80, 141, 0.3)",
                     BorderColor = "rgb(88, 80, 141)",

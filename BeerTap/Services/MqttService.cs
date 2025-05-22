@@ -135,12 +135,15 @@ namespace BeerTap.Services
                             if (session != null)
                             {
                                 session.StopTime = DateTime.UtcNow;
+
                                 session.TotalAmount = await _context.TapEvents
                                     .Where(e => e.SessionId == sessionId)
-                                .SumAsync(e => e.Amount);
-
+                                    .OrderByDescending(e => e.Timestamp)
+                                    .Select(e => e.Amount)
+                                    .FirstOrDefaultAsync();
                                 await _context.SaveChangesAsync();
                             }
+
 
                             _activeSessions.Remove(tapId);
                         }

@@ -1,6 +1,9 @@
 ﻿@page "/history"
 @inject NavigationManager Navigation
+@using BlazorBootstrap
+@using BeerTap.Models
 @rendermode InteractiveServer
+@using BeerTap.Components.Layout
 @using BeerTap.Models
 @inject BeerTap.Services.TapHistoryService HistoryService
 @inject BeerTap.Services.UserService UserService
@@ -15,13 +18,22 @@ else
 {
     @foreach (var session in sessions)
     {
-        <button class="btn btn-primary mb-2" @onclick="() => LoadEvents(session.Id)">
+        <button class="btn btn-primary mb-2" @onclick="() => LoadEvents(session)">
             @session.StartTime.ToString("g") - @session.TotalAmount L
         </button>
 
         @if (selectedSessionId == session.Id && tapEvents != null)
         {
-            <TapEventGraph Events="tapEvents" />
+            <div style="margin-top: auto; padding: 1rem;">
+                @if (tapEvents != null && tapEvents.Any())
+                {
+                    <LineChart @ref="lineChart" Class="mb-4" />
+                }
+                else
+                {
+                    <p>No data to show.</p>
+                }
+            </div>
         }
     }
 }
@@ -31,6 +43,9 @@ else
     private List<TapEvent>? tapEvents;
     private Guid selectedSessionId;
 
+    // public List<TapEvent> Events { get; set; } = [];
+
+    private LineChart lineChart = default!;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -43,21 +58,104 @@ else
             else
             {
                 sessions = await HistoryService.GetUserSessionsAsync(UserService._user.ID);
+                StateHasChanged(); // Render buttons
             }
         }
+
+        // Now that UI is rendered, safely access lineChart
+        if (lineChart is not null && tapEvents != null && tapEvents.Any())
+        {
+            await RenderChartAsync();
+        }
     }
+
     protected override async Task OnInitializedAsync()
     {
-        if(UserService._user != null)
+        if (UserService._user != null)
         {
             sessions = await HistoryService.GetUserSessionsAsync(UserService._user.ID);
 
         }
+        // if (tapEvents != null && tapEvents.Any())
+        // {
+        //     await RenderChartAsync();
+        // }
     }
 
-    private async Task LoadEvents(Guid sessionId)
+    private async Task LoadEvents(TapSession session)
     {
-        selectedSessionId = sessionId;
-        tapEvents = await HistoryService.GetSessionEventsAsync(sessionId);
+        selectedSessionId = session.Id;
+        tapEvents = await HistoryService.GetSessionEventsAsync(session.Id);
+        StateHasChanged(); // Trigger UI render so the chart component appears
+    }
+
+    private async Task RenderChartAsync()
+    {
+        var startTime = tapEvents.Min(e => e.Timestamp);
+
+        var labels = tapEvents
+            .OrderBy(e => e.Timestamp)
+            .Select(e => (e.Timestamp - startTime).TotalSeconds.ToString("F0")) // F0 = no decimals
+            .ToList();
+
+
+        var dataPoints = tapEvents
+            .OrderBy(e => e.Timestamp)
+            .Select(e => (double?)e.Amount)
+            .ToList();
+
+        var data = new ChartData
+            {
+                Labels = labels,
+                Datasets = new List<IChartDataset>
+            {
+                new LineChartDataset
+                {
+                    Label = "Beer Poured (L)",
+                    Data = dataPoints,
+                    BackgroundColor = "rgba(88, 80, 141, 0.3)",
+                    BorderColor = "rgb(88, 80, 141)",
+                    BorderWidth = 2,
+                    PointBackgroundColor = new List<string> { "rgb(88, 80, 141)" },
+                    PointBorderColor = new List<string> { "rgb(88, 80, 141)" }
+
+                }
+            }
+            };
+
+        var options = new LineChartOptions
+            {
+                Responsive = true,
+                Plugins = new LineChartPlugins
+                {
+                    Title = new ChartPluginsTitle
+                    {
+                        Display = true,
+                        Text = "Beer Tap Session",
+                        Font = new ChartFont { Size = 18 }
+                    }
+                },
+                Scales = new Scales
+                {
+                    X = new ChartAxes
+                    {
+                        Title = new ChartAxesTitle
+                        {
+                            Display = true,
+                            Text = "Time"
+                        }
+                    },
+                    Y = new ChartAxes
+                    {
+                        Title = new ChartAxesTitle
+                        {
+                            Display = true,
+                            Text = "Amount (L)"
+                        }
+                    }
+                }
+            };
+
+        await lineChart.InitializeAsync(data, options);
     }
 }

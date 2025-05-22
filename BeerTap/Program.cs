@@ -34,8 +34,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TapHistoryService>();
 
 
-
-
+builder.Services.AddBlazorBootstrap();
 builder.Services.AddControllers();
 
 

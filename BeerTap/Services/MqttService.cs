@@ -92,7 +92,7 @@ namespace BeerTap.Services
                             Id = Guid.NewGuid(),
                             SessionId = sessionId,
                             Timestamp = DateTime.UtcNow,
-                            Amount = amount - _lastAmounts[tapId]
+                            Amount = amount
                         };
 
                         _context.TapEvents.Add(tapEvent);

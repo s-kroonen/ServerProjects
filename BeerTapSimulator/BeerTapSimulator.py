@@ -23,7 +23,7 @@ pouring_index = 0
 pouring_total = 0
 last_pour_time = 0
 pouring_active = False
-pouring_interval = 1.0  # seconds between pours
+pouring_interval = 0.5  # seconds between pours
 
 def on_connect(client, userdata, flags, rc):
     print("Connected:", rc)

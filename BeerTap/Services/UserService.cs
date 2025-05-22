@@ -29,6 +29,7 @@ namespace BeerTap.Services
             _tapQueueManager = tapQueueManager;
             _logger = logger;
         }
+        
         public Task<int> GetScore(string userId) => _repo.GetUserScoreAsync(_user.ID);
 
         public Task UpdateScore(string userId, int newScore)

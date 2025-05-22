@@ -1,0 +1,63 @@
+﻿@page "/history"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using BeerTap.Models
+@inject BeerTap.Services.TapHistoryService HistoryService
+@inject BeerTap.Services.UserService UserService
+
+<h3>Your Tap History</h3>
+
+@if (sessions == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var session in sessions)
+    {
+        <button class="btn btn-primary mb-2" @onclick="() => LoadEvents(session.Id)">
+            @session.StartTime.ToString("g") - @session.TotalAmount L
+        </button>
+
+        @if (selectedSessionId == session.Id && tapEvents != null)
+        {
+            <TapEventGraph Events="tapEvents" />
+        }
+    }
+}
+
+@code {
+    private List<TapSession>? sessions;
+    private List<TapEvent>? tapEvents;
+    private Guid selectedSessionId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserService.TryRestoreSessionAsync();
+            if (!UserService.IsAuthenticated)
+            {
+                Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            }
+            else
+            {
+                sessions = await HistoryService.GetUserSessionsAsync(UserService._user.ID);
+            }
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if(UserService._user != null)
+        {
+            sessions = await HistoryService.GetUserSessionsAsync(UserService._user.ID);
+
+        }
+    }
+
+    private async Task LoadEvents(Guid sessionId)
+    {
+        selectedSessionId = sessionId;
+        tapEvents = await HistoryService.GetSessionEventsAsync(sessionId);
+    }
+}

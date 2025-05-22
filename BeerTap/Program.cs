@@ -6,20 +6,23 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionString");
+var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionStringRemote");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 // DB context
 builder.Services.AddDbContext<BeerTapContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetValue<string>("SqlConnectionString")));
+    options.UseSqlServer(builder.Configuration.GetValue<string>("SqlConnectionStringRemote")));
 
-
+//single services
 builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<MqttService>();
+
+//server services
 builder.Services.AddHostedService(sp => sp.GetRequiredService<MqttService>());
 
+//per session services
 builder.Services.AddTransient<UserRepository>(provider =>
 {
     var logger = provider.GetRequiredService<ILogger<UserRepository>>(); // Get logger from DI container
@@ -28,6 +31,8 @@ builder.Services.AddTransient<UserRepository>(provider =>
 //builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<TapHistoryService>();
+
 
 
 

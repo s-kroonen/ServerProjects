@@ -12,6 +12,7 @@ namespace BeerTap.Services
         private readonly IHubContext<TapQueueHub> _hubContext;
 
         public event Action<string, User>? CurrentUserChanged;
+        public event Action<string>? StopTapSession;
 
         public TapQueueManager(IHubContext<TapQueueHub> hubContext, ILogger<TapQueueManager> logger)
         {
@@ -101,6 +102,7 @@ namespace BeerTap.Services
                     var filteredQueue = new Queue<TapQueueEntry>(queue.Where(entry => entry.User.ID != user.ID));
                     if (filteredQueue.Count != originalCount)
                     {
+                        StopTapSession?.Invoke(tapId);
                         _tapQueues[tapId] = filteredQueue;
                         tapsToNotify.Add(tapId);
                         _logger.LogInformation($"User {user} dequeued from tap {tapId}");
@@ -160,7 +162,7 @@ namespace BeerTap.Services
             }
         }
 
-        public async Task Cancel(string tapId, User userId)
+        public async Task Cancel(string tapId, User user)
         {
             bool notify = false;
 
@@ -168,21 +170,23 @@ namespace BeerTap.Services
             {
                 if (_tapQueues.TryGetValue(tapId, out var queue))
                 {
-                    if (queue.Count > 0 && queue.Peek().User != userId)
+                    if (queue.Count > 0 && queue.Peek().User.ID != user.ID)// Check if user is first in queue then only cancel
                     {
                         var updatedQueue = new Queue<TapQueueEntry>(
-                            queue.Where(entry => entry.User.ID != userId.ID)
+                            queue.Where(entry => entry.User.ID != user.ID)
                         );
 
                         _tapQueues[tapId] = updatedQueue;
-                        _logger.LogInformation($"User {userId} cancelled for tap {tapId}");
+                        _logger.LogInformation($"User {user.UserId} cancelled for tap {tapId}");
+                        
                         notify = true;
                     }
-                    else if (queue.Count > 0)
+                    else if (queue.Count > 0)// Check if queue is full then stop tapping
                     {
+                        StopTapSession?.Invoke(tapId);
                         // Dequeue current user if they cancel
                         queue.Dequeue();
-                        _logger.LogInformation($"User {userId} dequeued via cancel for tap {tapId}");
+                        _logger.LogInformation($"User {user.UserId} dequeued via cancel for tap {tapId}");
                         notify = true;
 
                         if (queue.Count > 0)

@@ -59,10 +59,11 @@ namespace BeerTap.Services
                     _CurrentUsers.Remove(tapId);
                 else
                     _CurrentUsers[tapId] = user.ID;
-
-
             };
-
+            _tapQueueManager.StopTapSession += async (tapId) =>
+            {
+                await PublishTapCommand(tapId, "done");
+            };
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 using var scope = _scopeFactory.CreateScope();

@@ -13,7 +13,7 @@
         {
             await UserService.TryRestoreSessionAsync();
             await UserService.SignOut();
-            // NavigationManager.NavigateTo("/", forceLoad: true);
+            NavigationManager.NavigateTo("/", forceLoad: true);
         }
     }
 }

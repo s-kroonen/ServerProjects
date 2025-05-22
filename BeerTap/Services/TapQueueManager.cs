@@ -7,20 +7,20 @@ namespace BeerTap.Services
     public class TapQueueManager
     {
         private readonly ILogger<TapQueueManager> _logger;
-        private readonly Dictionary<string, Queue<TapQueueEntry>> _tapQueues = new();
+        private readonly Dictionary<Guid, Queue<TapQueueEntry>> _tapQueues = new();
         private readonly object _lock = new();
-        private readonly IHubContext<TapQueueHub> _hubContext;
+        //private readonly IHubContext<TapQueueHub> _hubContext;
 
-        public event Action<string, User>? CurrentUserChanged;
-        public event Action<string>? StopTapSession;
+        public event Action<Guid, User>? CurrentUserChanged;
+        public event Action<Guid>? StopTapSession;
 
         public TapQueueManager(IHubContext<TapQueueHub> hubContext, ILogger<TapQueueManager> logger)
         {
-            _hubContext = hubContext;
+            //_hubContext = hubContext;
             _logger = logger;
         }
 
-        public async Task EnqueueUser(string tapId, User user)
+        public async Task EnqueueUser(Guid tapId, User user)
         {
             bool notify = false;
 
@@ -54,7 +54,7 @@ namespace BeerTap.Services
                 await NotifyQueueChangedAsync(tapId);
         }
 
-        public async Task<TapQueueEntry?> DequeueUser(string tapId)
+        public async Task<TapQueueEntry?> DequeueUser(Guid tapId)
         {
             TapQueueEntry? user = null;
             bool notify = false;
@@ -88,7 +88,7 @@ namespace BeerTap.Services
 
         public async Task DequeueUserFromAllTaps(User user)
         {
-            var tapsToNotify = new List<string>();
+            var tapsToNotify = new List<Guid>();
 
             lock (_lock)
             {
@@ -125,7 +125,7 @@ namespace BeerTap.Services
 
 
 
-        public bool IsUserNext(string tapId, User user)
+        public bool IsUserNext(Guid tapId, User user)
         {
             lock (_lock)
             {
@@ -138,7 +138,7 @@ namespace BeerTap.Services
             }
         }
 
-        public TapQueueEntry? PeekCurrentUser(string tapId)
+        public TapQueueEntry? PeekCurrentUser(Guid tapId)
         {
             lock (_lock)
             {
@@ -148,7 +148,7 @@ namespace BeerTap.Services
             }
         }
 
-        public int GetUserPosition(string tapId, User user)
+        public int GetUserPosition(Guid tapId, User user)
         {
             lock (_lock)
             {
@@ -162,7 +162,7 @@ namespace BeerTap.Services
             }
         }
 
-        public async Task Cancel(string tapId, User user)
+        public async Task Cancel(Guid tapId, User user)
         {
             bool notify = false;
 
@@ -207,7 +207,7 @@ namespace BeerTap.Services
                 await NotifyQueueChangedAsync(tapId);
         }
 
-        public bool HasUsers(string tapId)
+        public bool HasUsers(Guid tapId)
         {
             lock (_lock)
             {
@@ -215,7 +215,7 @@ namespace BeerTap.Services
             }
         }
 
-        public List<TapQueueEntry> GetQueueSnapshot(string tapId)
+        public List<TapQueueEntry> GetQueueSnapshot(Guid tapId)
         {
             lock (_lock)
             {
@@ -225,10 +225,10 @@ namespace BeerTap.Services
             }
         }
 
-        private async Task NotifyQueueChangedAsync(string tapId)
+        private async Task NotifyQueueChangedAsync(Guid tapId)
         {
             var snapshot = GetQueueSnapshot(tapId);
-            await _hubContext.Clients.Group(tapId).SendAsync("QueueUpdated", tapId, snapshot);
+            //await _hubContext.Clients.Group(tapId).SendAsync("QueueUpdated", tapId, snapshot);
         }
     }
 }

@@ -9,16 +9,26 @@ namespace BeerTap.Data
     {
         public BeerTapContext(DbContextOptions<BeerTapContext> options) : base(options) { }
 
+        public DbSet<Tap> Taps { get; set; }
         public DbSet<TapSession> TapSessions { get; set; }
         public DbSet<TapEvent> TapEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // TapSession -> TapEvent (already there)
             modelBuilder.Entity<TapSession>()
                 .HasMany(ts => ts.TapEvents)
                 .WithOne(e => e.TapSession!)
                 .HasForeignKey(e => e.SessionId)
-                .OnDelete(DeleteBehavior.Cascade); // optional: cascade delete
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Tap -> TapSession (add this)
+            modelBuilder.Entity<Tap>()
+                .HasMany(t => t.TapSessions)
+                .WithOne(ts => ts.Tap)
+                .HasForeignKey(ts => ts.TapId)
+                .OnDelete(DeleteBehavior.Cascade); // optional
         }
+
     }
 }

@@ -8,11 +8,13 @@ namespace BeerTap.Models
         [Key]
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public string TapId { get; set; } = string.Empty;
+        [ForeignKey("Tap")]
+        public Guid TapId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime StopTime { get; set; }
         public float TotalAmount { get; set; }
         // Navigation property
         public List<TapEvent> TapEvents { get; set; } = new();
+        public Tap Tap { get; set; } = null!; // Add this line
     }
 }

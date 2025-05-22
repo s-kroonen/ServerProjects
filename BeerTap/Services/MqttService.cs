@@ -10,7 +10,7 @@ namespace BeerTap.Services
 {
     public class MqttService : IHostedService
     {
-        public List<string> TapIds = new() { "1", "2" };
+        //public List<string> TapIds = new() { "1", "2" };
 
         private IMqttClient _mqttClient;
         private readonly TapQueueManager _tapQueueManager;
@@ -19,15 +19,19 @@ namespace BeerTap.Services
         private readonly IServiceScopeFactory _scopeFactory;
 
 
-        public event Action<string, float>? OnAmountUpdated;
-        public event Action<string, string>? OnStatusUpdated;
+        public event Action<Guid, float>? OnAmountUpdated;
+        public event Action<Guid, string>? OnStatusUpdated;
 
-        private readonly Dictionary<string, CancellationTokenSource> _amountWatchdogTokens = new();
-        private readonly Dictionary<string, CancellationTokenSource> _statusWatchdogTokens = new();
-        private readonly Dictionary<string, Guid> _activeSessions = new();
-        private readonly Dictionary<string, float> _lastAmounts = new();
-        private readonly Dictionary<string, string> _CurrentStatuses = new();
-        private readonly Dictionary<string, Guid> _CurrentUsers = new();
+        //tap id to other info
+        private readonly Dictionary<Guid, CancellationTokenSource> _amountWatchdogTokens = new();
+        private readonly Dictionary<Guid, CancellationTokenSource> _statusWatchdogTokens = new();
+        private readonly Dictionary<Guid, Guid> _activeSessions = new();
+        private readonly Dictionary<Guid, float> _lastAmounts = new();
+        private readonly Dictionary<Guid, string> _CurrentStatuses = new();
+        private readonly Dictionary<Guid, Guid> _CurrentUsers = new();
+
+        private readonly Dictionary<string, Guid> _topicToTapId = new();
+        private readonly Dictionary<Guid, string> _tapIdToTopic = new();
 
 
         private const int amountTimeout = 5000;
@@ -51,6 +55,10 @@ namespace BeerTap.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
+
+
             await ConnectAsync();
             _tapQueueManager.CurrentUserChanged += async (tapId, user) =>
             {
@@ -62,12 +70,23 @@ namespace BeerTap.Services
             };
             _tapQueueManager.StopTapSession += async (tapId) =>
             {
-                await PublishTapCommand(tapId, "done");
+                await PublishTapCommand(_tapIdToTopic[tapId], "done");
             };
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 using var scope = _scopeFactory.CreateScope();
                 var _context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
+
+                var taps = await context.Taps.ToListAsync();
+                foreach (var tap in taps)
+                {
+                    if (!string.IsNullOrWhiteSpace(tap.Topic))
+                    {
+                        _topicToTapId[tap.Topic] = tap.Id;
+                        _tapIdToTopic[tap.Id] = tap.Topic;
+                        await SubscribeToTap(tap.Topic); // uses the topic string (e.g. "1", "abc123")
+                    }
+                }
 
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
@@ -76,8 +95,15 @@ namespace BeerTap.Services
                 var segments = topic.Split('/');
                 if (segments.Length < 4) return;
 
-                var tapId = segments[2];
+                var tapTopic = segments[2]; // string like "1"
                 var type = segments[3];
+
+                // Translate topic to tapId (Guid)
+                if (!_topicToTapId.TryGetValue(tapTopic, out var tapId))
+                {
+                    _logger.LogWarning("Unknown tap topic: {TapTopic}", tapTopic);
+                    return;
+                }
 
                 if (type == "amount" && float.TryParse(payload, out float amount))
                 {
@@ -162,16 +188,16 @@ namespace BeerTap.Services
             return Clean_Disconnect();
         }
 
-        public async Task SubscribeToTap(string tapId)
+        public async Task SubscribeToTap(string tapTopic)
         {
-            string topic = $"{_topicPrefix}{tapId}/#";
+            string topic = $"{_topicPrefix}{tapTopic}/#";
             await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
                 .WithTopic(topic)
                 .Build());
             _logger.LogInformation("Subscribed to: {Topic}", topic);
         }
 
-        public async Task PublishTapCommand(string tapId, string message)
+        public async Task PublishTapCommand(string tapTopic, string message)
         {
             if (_mqttClient is null || !_mqttClient.IsConnected)
             {
@@ -179,7 +205,7 @@ namespace BeerTap.Services
                 return;
             }
 
-            string topic = $"{_topicPrefix}{tapId}/cmd";
+            string topic = $"{_topicPrefix}{tapTopic}/cmd";
 
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -191,7 +217,7 @@ namespace BeerTap.Services
             _logger.LogInformation("Published to: {Topic} with message: {Message}", topic, message);
         }
 
-        public async Task AnnounceCurrentUser(string tapId, User? user)
+        public async Task AnnounceCurrentUser(Guid tapId, User? user)
         {
 
             var message = new MqttApplicationMessageBuilder()
@@ -206,12 +232,12 @@ namespace BeerTap.Services
 
                 if (user == null)
                 {
-                    await PublishTapCommand(tapId, "reset");
+                    await PublishTapCommand(_tapIdToTopic[tapId], "reset");
                 }
             }
         }
 
-        private void StartAmountMonitor(string tapId)
+        private void StartAmountMonitor(Guid tapId)
         {
             if (_amountWatchdogTokens.TryGetValue(tapId, out var oldToken))
             {
@@ -229,7 +255,7 @@ namespace BeerTap.Services
                     if (_lastAmounts.TryGetValue(tapId, out float current) && current == lastAmount && current != 0 && _CurrentStatuses[tapId] == "stopped")
                     {
                         _logger.LogInformation("Tap {TapId} finished pouring.", tapId);
-                        await PublishTapCommand(tapId, "done");
+                        await PublishTapCommand(_tapIdToTopic[tapId], "done");
                         await _tapQueueManager.DequeueUser(tapId);
                         break;
                     }
@@ -238,7 +264,7 @@ namespace BeerTap.Services
             }, cts.Token);
         }
 
-        private void StartStatusMonitor(string tapId)
+        private void StartStatusMonitor(Guid tapId)
         {
             if (_statusWatchdogTokens.TryGetValue(tapId, out var oldToken))
             {
@@ -257,7 +283,7 @@ namespace BeerTap.Services
                     {
                         _logger.LogInformation("Tap {TapId} reset to idle.", tapId);
                         await _tapQueueManager.DequeueUser(tapId);
-                        await PublishTapCommand(tapId, "reset");
+                        await PublishTapCommand(_tapIdToTopic[tapId], "reset");
                         break;
                     }
                     lastStatus = current;

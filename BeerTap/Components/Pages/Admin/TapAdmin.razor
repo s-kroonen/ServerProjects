@@ -1,0 +1,122 @@
+﻿@page "/admin/taps"
+@inject BeerTap.Services.TapDataService TapDataService
+@inject BeerTap.Services.MqttService MqttService
+@rendermode InteractiveServer
+@using BeerTap.Models
+<h3>Manage Taps</h3>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+			<th>Type</th>
+			<th>Topic</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var tap in taps)
+		{
+			<tr>
+				<td>@tap.Id</td>
+				<td>@tap.Name</td>
+				<td>@tap.Type</td>
+				<td>@tap.Topic</td>
+				<td>
+					<button class="btn btn-sm btn-primary" @onclick="() => EditTap(tap)">Edit</button>
+					<button class="btn btn-sm btn-danger" @onclick="() => DeleteTap(tap.Id)">Delete</button>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+<hr />
+
+<h4>@(editingTap.Id == Guid.Empty ? "Add New Tap" : "Edit Tap")</h4>
+
+<EditForm Model="editingTap" OnValidSubmit="SaveTap" FormName="edittap">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<div class="mb-2">
+		<label>Name:</label>
+		<InputText class="form-control" @bind-Value="editingTap.Name" />
+	</div>
+	<div class="mb-2">
+		<label>Type:</label>
+		<InputText class="form-control" @bind-Value="editingTap.Type" />
+	</div>
+	<div class="mb-2">
+		<label>Topic:</label>
+		<InputText class="form-control" @bind-Value="editingTap.Topic" />
+	</div>
+
+	<button class="btn btn-success" type="submit">Save</button>
+	<button class="btn btn-secondary" type="button" @onclick="ClearForm">Cancel</button>
+</EditForm>
+
+@code {
+	private List<Tap> taps = new();
+	private Tap editingTap = new()
+		{
+			Name = string.Empty,
+			Type = string.Empty
+		};
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadTaps();
+	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await LoadTaps();
+
+		}
+	}
+	private async Task LoadTaps()
+	{
+		taps = await TapDataService.GetAllAsync();
+	}
+
+	private void EditTap(Tap tap)
+	{
+		editingTap.Id = tap.Id;
+		editingTap.Name = tap.Name;
+		editingTap.Type = tap.Type;
+		editingTap.Topic = tap.Topic;
+	}
+
+
+	private async Task SaveTap()
+	{
+		if (editingTap.Id == Guid.Empty)
+			await TapDataService.AddAsync(editingTap);
+		else
+			await TapDataService.UpdateAsync(editingTap);
+
+		if (!String.IsNullOrEmpty(editingTap.Topic))
+			await MqttService.SubscribeToTap(editingTap.Topic);
+
+		await LoadTaps();
+		ClearForm();
+	}
+
+	private async Task DeleteTap(Guid id)
+	{
+		await TapDataService.DeleteAsync(id);
+		await LoadTaps();
+	}
+
+	private void ClearForm()
+	{
+		editingTap.Id = Guid.Empty;
+		editingTap.Name = string.Empty;
+		editingTap.Type = string.Empty;
+		editingTap.Topic = string.Empty;
+	}
+
+}

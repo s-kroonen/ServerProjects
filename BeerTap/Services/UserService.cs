@@ -29,6 +29,7 @@ namespace BeerTap.Services
             _tapQueueManager = tapQueueManager;
             _logger = logger;
         }
+        
         public Task<int> GetScore(string userId) => _repo.GetUserScoreAsync(_user.ID);
 
         public Task UpdateScore(string userId, int newScore)
@@ -96,7 +97,7 @@ namespace BeerTap.Services
 
             if (_user != null)
             {
-                await _tapQueueManager.DequeueUserFromAllTaps(_user.UserId);
+                await _tapQueueManager.DequeueUserFromAllTaps(_user);
                 _logger.LogInformation("User dequeued: {UserId}", _user.UserId);
             }
 

@@ -1,4 +1,5 @@
-@page "/tappage/{TapId}"
+@page "/TapPage/{tapId:guid}"
+@using BeerTap.Models
 @inject BeerTap.Services.TapQueueManager TapQueueManager
 @inject BeerTap.Services.MqttService MqttService
 @inject BeerTap.Services.UserService UserService
@@ -6,7 +7,7 @@
 @rendermode InteractiveServer
 @implements IDisposable
 
-<h3>Tap @TapId</h3>
+<h3>Tap @Tap</h3>
 
 @if (!@UserService.IsAuthenticated)
 {
@@ -16,7 +17,7 @@ else
 {
 	<p>Welcome, @UserService._user.UserId!</p>
 
-	@if (TapQueueManager.GetUserPosition(TapId, UserService._user.UserId) == -1)
+	@if (TapQueueManager.GetUserPosition(tapId, UserService._user) == -1)
 	{
 		<button class="btn btn-success" @onclick="JoinQueue">Join Queue</button>
 	}
@@ -43,12 +44,16 @@ else
 
 @code {
 	[Parameter]
-	public string TapId { get; set; } = string.Empty;
+	public Guid tapId { get; set; }
+	public Tap Tap;
+	[Inject]
+
+	public BeerTap.Data.BeerTapContext DbContext { get; set; } = default!;
 	private float CurrentAmount = 0;
 	private string TapStatus = "idle";
 	// private string? UserId;
 	private int QueuePosition;
-	private bool CanTap => TapQueueManager.IsUserNext(TapId, UserService._user.UserId!);
+	private bool CanTap => TapQueueManager.IsUserNext(tapId, UserService._user);
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
@@ -60,7 +65,8 @@ else
 			}
 			else
 			{
-				await MqttService.SubscribeToTap(TapId);
+				// await MqttService.SubscribeToTap(TapId);
+				Tap = await DbContext.Taps.FindAsync(tapId);
 			}
 		}
 	}
@@ -68,23 +74,24 @@ else
 	{
 		if (UserService.IsAuthenticated)
 		{
-
+			Tap = await DbContext.Taps.FindAsync(tapId);
+			// Load additional data for this tap if needed
 			MqttService.OnAmountUpdated += OnAmountChanged;
 			MqttService.OnStatusUpdated += OnStatusChanged;
-			await TapQueueManager.EnqueueUser(TapId, UserService._user.UserId);
+			await TapQueueManager.EnqueueUser(Tap.Id, UserService._user);
 			TapQueueManager.CurrentUserChanged += OnQueueChanged;
 
 			UpdateQueueInfo();
 		}
 	}
 
-	private void UpdateQueueInfo()
+	private async void UpdateQueueInfo()
 	{
-		QueuePosition = TapQueueManager.GetUserPosition(TapId, UserService._user.UserId);
+		QueuePosition = TapQueueManager.GetUserPosition(Tap.Id, UserService._user);
 		StateHasChanged();
 		if (QueuePosition == 0)
 		{
-			MqttService.PublishTapCommand(TapId, "reset");
+			await MqttService.PublishTapCommand(Tap.Topic, "reset");
 		}
 	}
 
@@ -92,26 +99,26 @@ else
 	{
 		Console.WriteLine("PourStart");
 		// QueueManager.DequeueUser(TapId);
-		MqttService.PublishTapCommand(TapId, "start");
+		await MqttService.PublishTapCommand(Tap.Topic, "start");
 		// UpdateQueueInfo();
 	}
 
-	private Task Cancel()
+	private async Task Cancel()
 	{
-		TapQueueManager.Cancel(TapId, UserService._user.UserId);
+		await TapQueueManager.Cancel(Tap.Id, UserService._user);
 		Navigation.NavigateTo("/");
-		return Task.CompletedTask;
+		return;
 	}
 
-	private void JoinQueue()
+	private async void JoinQueue()
 	{
-		TapQueueManager.EnqueueUser(TapId, UserService._user.UserId);
+		await TapQueueManager.EnqueueUser(Tap.Id, UserService._user);
 		UpdateQueueInfo();
 	}
 
-	private void OnQueueChanged(string tap, string user)
+	private void OnQueueChanged(Guid tap, User user)
 	{
-		if (tap == TapId)
+		if (tap == Tap.Id)
 		{
 			InvokeAsync(() =>
 			{
@@ -121,18 +128,18 @@ else
 		}
 	}
 
-	private void OnAmountChanged(string tap, float amount)
+	private void OnAmountChanged(Guid tap, float amount)
 	{
-		if (tap == TapId)
+		if (tap == Tap.Id)
 		{
 			CurrentAmount = amount;
 			InvokeAsync(StateHasChanged);
 		}
 	}
 
-	private void OnStatusChanged(string tap, string status)
+	private void OnStatusChanged(Guid tap, string status)
 	{
-		if (tap == TapId)
+		if (tap == Tap.Id)
 		{
 			TapStatus = status;
 			if (TapStatus == "done")

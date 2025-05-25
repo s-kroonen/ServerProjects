@@ -61,7 +61,9 @@ namespace BeerTap.Services
             var context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
 
             await ConnectAsync();
+
             await SubscribeToTaps();
+
             _tapQueueManager.CurrentUserChanged += async (tapId, user) =>
             {
                 await AnnounceCurrentUser(tapId, user);

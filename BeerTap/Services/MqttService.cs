@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using BeerTap.Models;
 using Microsoft.EntityFrameworkCore;
 using BeerTap.Data;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace BeerTap.Services
 {
@@ -52,14 +53,15 @@ namespace BeerTap.Services
             _scopeFactory = scopeFactory;
         }
 
+        
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
 
-
             await ConnectAsync();
+            await SubscribeToTaps();
             _tapQueueManager.CurrentUserChanged += async (tapId, user) =>
             {
                 await AnnounceCurrentUser(tapId, user);
@@ -76,17 +78,6 @@ namespace BeerTap.Services
             {
                 using var scope = _scopeFactory.CreateScope();
                 var _context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
-
-                var taps = await context.Taps.ToListAsync();
-                foreach (var tap in taps)
-                {
-                    if (!string.IsNullOrWhiteSpace(tap.Topic))
-                    {
-                        _topicToTapId[tap.Topic] = tap.Id;
-                        _tapIdToTopic[tap.Id] = tap.Topic;
-                        await SubscribeToTap(tap.Topic); // uses the topic string (e.g. "1", "abc123")
-                    }
-                }
 
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
@@ -186,6 +177,22 @@ namespace BeerTap.Services
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Clean_Disconnect();
+        }
+        public async Task SubscribeToTaps()
+        {
+
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
+            var taps = await context.Taps.ToListAsync();
+            foreach (var tap in taps)
+            {
+                if (!string.IsNullOrWhiteSpace(tap.Topic))
+                {
+                    _topicToTapId[tap.Topic] = tap.Id;
+                    _tapIdToTopic[tap.Id] = tap.Topic;
+                    await SubscribeToTap(tap.Topic); // uses the topic string (e.g. "1", "abc123")
+                }
+            }
         }
 
         public async Task SubscribeToTap(string tapTopic)

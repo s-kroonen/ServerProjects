@@ -17,7 +17,7 @@ else
 {
 	<p>Welcome, @UserService._user.UserId!</p>
 
-	@if (TapQueueManager.GetUserPosition(Tap.Id, UserService._user) == -1)
+	@if (TapQueueManager.GetUserPosition(tapId, UserService._user) == -1)
 	{
 		<button class="btn btn-success" @onclick="JoinQueue">Join Queue</button>
 	}
@@ -53,7 +53,7 @@ else
 	private string TapStatus = "idle";
 	// private string? UserId;
 	private int QueuePosition;
-	private bool CanTap => TapQueueManager.IsUserNext(Tap.Id, UserService._user);
+	private bool CanTap => TapQueueManager.IsUserNext(tapId, UserService._user);
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
@@ -66,6 +66,7 @@ else
 			else
 			{
 				// await MqttService.SubscribeToTap(TapId);
+				Tap = await DbContext.Taps.FindAsync(tapId);
 			}
 		}
 	}

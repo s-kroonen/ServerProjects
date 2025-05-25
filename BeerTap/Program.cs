@@ -12,9 +12,8 @@ var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionS
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 // DB context
-builder.Services.AddDbContext<BeerTapContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetValue<string>("SqlConnectionStringRemote")));
-
+builder.Services.AddDbContextFactory<BeerTapContext>(options =>
+    options.UseSqlServer(sqlConnectionString));
 //single services
 builder.Services.AddSingleton<TapQueueManager>();
 builder.Services.AddSingleton<MqttService>();

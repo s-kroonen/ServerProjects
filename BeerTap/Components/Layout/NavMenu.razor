@@ -1,7 +1,7 @@
 ﻿@inject BeerTap.Services.MqttService MqttService
 @using BeerTap.Models
 @using Microsoft.EntityFrameworkCore;
-@inject BeerTap.Data.BeerTapContext DbContext
+@inject BeerTap.Services.TapDataService TapService
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 <div class="top-row ps-3 navbar navbar-dark">
@@ -55,13 +55,13 @@
 
             protected override async Task OnInitializedAsync()
             {
-                taps = await DbContext.Taps.ToListAsync();
+                // taps = await TapService.GetAllAsync();
             }
             protected override async Task OnAfterRenderAsync(bool firstRender)
             {
                 if (firstRender)
                 {
-                    taps = await DbContext.Taps.ToListAsync();
+                    taps = await TapService.GetAllAsync();
                 }
             }
         }

@@ -31,7 +31,9 @@ builder.Services.AddTransient<UserRepository>(provider =>
 //builder.Services.AddTransient<UserRepository, UserRepository>(o => new UserRepository(sqlConnectionString));
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<TapHistoryService>();
+//builder.Services.AddScoped<TapHistoryService>();
+builder.Services.AddScoped<TapDataService>();
+
 
 
 builder.Services.AddBlazorBootstrap();

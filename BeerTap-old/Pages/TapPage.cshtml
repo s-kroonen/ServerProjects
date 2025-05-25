@@ -1,0 +1,48 @@
+﻿@page "{tapId}"
+@model TapPageModel
+@{
+    ViewData["Title"] = $"Tap {Model.TapId}";
+}
+
+<h1>Tap @Model.TapId</h1>
+
+<p>Welcome, @Model.UserId!</p>
+
+@if (Model.QueuePosition > 0)
+{
+    <p>You are #@Model.QueuePosition in the queue.</p>
+
+    @if (Model.CanTap)
+    {
+        <form method="post" asp-page-handler="PourBeer">
+            <button type="submit">Pour Beer</button>
+        </form>
+    }
+    else
+    {
+        <p>Please wait for your turn...</p>
+    }
+}
+else
+{
+    <p>You are not currently in the queue.</p>
+}
+<p>@Model.Message</p>
+
+<form method="post" asp-page-handler="CancelUser">
+    <button type="submit">Back</button>
+</form>
+
+<form method="post" asp-page-handler="Logout">
+    <button type="submit">Logout</button>
+</form>
+<script type="text/javascript">
+    window.addEventListener("unload", function () {
+        navigator.sendBeacon("/Tap?handler=CancelUser");
+    });
+</script>
+
+
+
+
+

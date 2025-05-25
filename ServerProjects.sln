@@ -5,7 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatRoom", "ChatRoom\ChatRoom.csproj", "{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap", "BeerTap\BeerTap.csproj", "{E679DCB0-CF3C-432E-B2CA-03135299F6FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap-old", "BeerTap-old\BeerTap-old.csproj", "{90D7F394-12B5-B16A-92F1-4808A69DFE06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerTap", "BeerTap\BeerTap.csproj", "{03ED84AB-1340-401A-A164-A233591E8E22}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "BeerTapSimulator", "BeerTapSimulator\BeerTapSimulator.pyproj", "{318A9C3B-F015-44EE-AAE7-1FE26525856B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +21,16 @@ Global
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB13004A-FFFC-4D56-9B5C-C9E51709EC49}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E679DCB0-CF3C-432E-B2CA-03135299F6FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90D7F394-12B5-B16A-92F1-4808A69DFE06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90D7F394-12B5-B16A-92F1-4808A69DFE06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90D7F394-12B5-B16A-92F1-4808A69DFE06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90D7F394-12B5-B16A-92F1-4808A69DFE06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03ED84AB-1340-401A-A164-A233591E8E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03ED84AB-1340-401A-A164-A233591E8E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03ED84AB-1340-401A-A164-A233591E8E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03ED84AB-1340-401A-A164-A233591E8E22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{318A9C3B-F015-44EE-AAE7-1FE26525856B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{318A9C3B-F015-44EE-AAE7-1FE26525856B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,71 @@
+﻿@inject BeerTap.Services.MqttService MqttService
+@using BeerTap.Models
+@using Microsoft.EntityFrameworkCore;
+@inject BeerTap.Services.TapDataService TapService
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">BeerTap</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="account">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Account
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="history">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> History
+            </NavLink>
+        </div>
+
+        @foreach (var tap in @taps)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href=@($"TapPage/{tap.Id}")>
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> BeerTap-@tap.Name
+                </NavLink>
+            </div>
+        }
+        <div style="margin-top: auto; padding: 1rem;">
+            <DebugPanel />
+        </div>
+        <div class="mt-auto px-3 pb-3">
+            <button class="btn btn-danger w-100" @onclick="Logout">Logout</button>
+        </div>
+
+        @code {
+            private void Logout()
+            {
+                NavigationManager.NavigateTo("/logout", forceLoad: true);
+            }
+            private List<Tap> taps = new();
+
+            protected override async Task OnInitializedAsync()
+            {
+                taps = await TapService.GetAllAsync();
+            }
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    taps = await TapService.GetAllAsync();
+                }
+            }
+        }
+    </nav>
+
+</div>
+

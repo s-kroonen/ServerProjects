@@ -1,0 +1,121 @@
+﻿@page "/login"
+@inject BeerTap.Services.UserService UserService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>@(isRegisterMode ? "Register" : "Login")</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">User ID</label>
+        <InputText @bind-Value="loginModel.UserId" class="form-control" />
+        <ValidationMessage For="() => loginModel.UserId" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">PIN</label>
+        <InputText @bind-Value="loginModel.Pin" type="password" class="form-control" />
+        <ValidationMessage For="() => loginModel.Pin" />
+    </div>
+
+    @if (isRegisterMode)
+    {
+        <div class="mb-3">
+            <label class="form-label">Confirm PIN</label>
+            <InputText @bind-Value="loginModel.ConfirmPin" type="password" class="form-control" />
+            <ValidationMessage For="() => loginModel.ConfirmPin" />
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">@((isRegisterMode ? "Register" : "Login"))</button>
+    <button type="button" class="btn btn-link" @onclick="ToggleMode">
+        @(isRegisterMode ? "Already have an account? Log in" : "Need an account? Register")
+    </button>
+</EditForm>
+
+@if (loginError)
+{
+    <div class="alert alert-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private LoginModel loginModel = new();
+    private bool loginError = false;
+    private string errorMessage = string.Empty;
+    private bool isRegisterMode = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserService.TryRestoreSessionAsync();
+
+            if (UserService.IsAuthenticated && !string.IsNullOrEmpty(ReturnUrl))
+            {
+                NavigationManager.NavigateTo(ReturnUrl);
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        loginError = false;
+        errorMessage = string.Empty;
+
+        if (isRegisterMode)
+        {
+            if (loginModel.Pin != loginModel.ConfirmPin)
+            {
+                loginError = true;
+                errorMessage = "PIN and Confirm PIN must match.";
+                return;
+            }
+
+            var success = await UserService.SignUpAsync(loginModel.UserId, loginModel.Pin);
+            if (!success)
+            {
+                loginError = true;
+                errorMessage = "Registration failed. User may already exist.";
+                return;
+            }
+
+            // Auto-login after signup
+            // await UserService.SignInAsync(loginModel.UserId, loginModel.Pin);
+        }
+        else
+        {
+            var isLoggedIn = await UserService.SignInAsync(loginModel.UserId, loginModel.Pin);
+            if (!isLoggedIn)
+            {
+                loginError = true;
+                errorMessage = "Invalid credentials. Please try again.";
+                return;
+            }
+        }
+
+        NavigationManager.NavigateTo(ReturnUrl ?? "/");
+    }
+
+    private void ToggleMode()
+    {
+        isRegisterMode = !isRegisterMode;
+        loginError = false;
+        errorMessage = string.Empty;
+    }
+
+    public class LoginModel
+    {
+        [EditorRequired]
+        public string UserId { get; set; }
+
+        public string? Pin { get; set; }
+        public string? ConfirmPin { get; set; }
+    }
+}

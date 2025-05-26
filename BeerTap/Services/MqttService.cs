@@ -40,7 +40,7 @@ namespace BeerTap.Services
 
 
         private readonly string _topicPrefix = "beer/tap/";
-        private readonly string _clientId = "TapApi";
+        private readonly string _clientId = "TapApi2";
         private readonly string _host = "kroon-en.nl";
         private readonly int _port = 8883;
         private readonly string _username = "public";
@@ -60,7 +60,8 @@ namespace BeerTap.Services
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BeerTapContext>();
 
-            await ConnectAsync();
+            await ConnectWithRetryAsync();
+
 
             await SubscribeToTaps();
 
@@ -197,25 +198,21 @@ namespace BeerTap.Services
             }
         }
 
-        public async Task SubscribeToTap(string tapTopic)
+        private async Task EnsureConnectedAsync()
         {
-            string topic = $"{_topicPrefix}{tapTopic}/#";
-            await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
-                .WithTopic(topic)
-                .Build());
-            _logger.LogInformation("Subscribed to: {Topic}", topic);
+            if (_mqttClient == null || !_mqttClient.IsConnected)
+            {
+                _logger.LogWarning("MQTT client disconnected, attempting reconnect...");
+                await ConnectWithRetryAsync();
+                await SubscribeToTaps(); // Re-subscribe after reconnect
+            }
         }
 
         public async Task PublishTapCommand(string tapTopic, string message)
         {
-            if (_mqttClient is null || !_mqttClient.IsConnected)
-            {
-                _logger.LogWarning("MQTT client not ready, skipping publish");
-                return;
-            }
+            await EnsureConnectedAsync();
 
             string topic = $"{_topicPrefix}{tapTopic}/cmd";
-
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(message)
@@ -225,6 +222,19 @@ namespace BeerTap.Services
             await _mqttClient.PublishAsync(mqttMessage);
             _logger.LogInformation("Published to: {Topic} with message: {Message}", topic, message);
         }
+
+        public async Task SubscribeToTap(string tapTopic)
+        {
+            await EnsureConnectedAsync();
+
+            string topic = $"{_topicPrefix}{tapTopic}/#";
+            await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
+                .WithTopic(topic)
+                .Build());
+
+            _logger.LogInformation("Subscribed to: {Topic}", topic);
+        }
+
 
         public async Task AnnounceCurrentUser(Guid tapId, User? user)
         {
@@ -336,5 +346,54 @@ namespace BeerTap.Services
 
             _logger.LogInformation("MQTT connected!");
         }
+        private async Task ConnectWithRetryAsync(int maxAttempts = 5, int delayMilliseconds = 2000)
+        {
+            var mqttFactory = new MqttClientFactory();
+            _mqttClient = mqttFactory.CreateMqttClient();
+
+            var mqttClientOptions = new MqttClientOptionsBuilder()
+                .WithClientId(_clientId)
+                .WithTcpServer(_host, _port)
+                .WithCredentials(_username, _password)
+                .WithCleanSession()
+                .WithTlsOptions(new MqttClientTlsOptions
+                {
+                    UseTls = true,
+                    AllowUntrustedCertificates = true,
+                    CertificateValidationHandler = _ => true
+                })
+                .Build();
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var response = await _mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+                    if (response.ResultCode == MqttClientConnectResultCode.Success)
+                    {
+                        _logger.LogInformation("MQTT connected!");
+                        _mqttClient.DisconnectedAsync += async e =>
+                        {
+                            _logger.LogWarning("MQTT client disconnected. Reconnecting...");
+                            //await ConnectWithRetryAsync();
+                            //await SubscribeToTaps();
+                        };
+
+                        return;
+                    }
+
+                    _logger.LogWarning("MQTT connect attempt {Attempt} failed: {Result}", attempt, response.ResultCode);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("MQTT connect attempt {Attempt} exception: {Exception}", attempt, ex.Message);
+                }
+
+                await Task.Delay(delayMilliseconds);
+            }
+
+            throw new InvalidOperationException("Failed to connect to MQTT broker after multiple attempts.");
+        }
+
     }
 }

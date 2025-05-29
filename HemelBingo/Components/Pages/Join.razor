@@ -1,0 +1,99 @@
+﻿@page "/join"
+@using HemelBingo.Services
+@inject NavigationManager Nav
+@inject BingoSessionService BingoSessionService
+@inject UserSessionService UserSessionService
+
+<h3>Join Bingo Session</h3>
+
+@if (IsLoading)
+{
+	<p>Loading session info...</p>
+}
+else if (!IsAllowed)
+{
+	<p>You are not allowed to join the current bingo session. Please contact the Bingo Master.</p>
+}
+else if (HasJoined)
+{
+	<p>You have already joined the session and have a bingo card.</p>
+	<button class="btn btn-primary" @onclick="GoToCard">Go to My Card</button>
+}
+else
+{
+	<p>Welcome, @UserName! You can join the active bingo session now.</p>
+	<button class="btn btn-success" @onclick="JoinSession">Join Session</button>
+	@if (!string.IsNullOrEmpty(ErrorMessage))
+	{
+		<p class="text-danger">@ErrorMessage</p>
+	}
+}
+
+@code {
+	private bool IsLoading = true;
+	private bool IsAllowed = false;
+	private bool HasJoined = false;
+	private string? ErrorMessage;
+	private string? UserName;
+	private int UserId;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await UserSessionService.TryRestoreSessionAsync();
+			var user = UserSessionService.CurrentUser;
+			if (UserSessionService.IsLoggedIn)
+			{
+				UserId = user.Id;
+				UserName = user.Name;
+
+				var session = BingoSessionService.CurrentSesison;
+				if (session == null)
+				{
+					ErrorMessage = "No active bingo session.";
+					IsLoading = false;
+					return;
+				}
+
+				IsAllowed = session.AllowedUsers.Any(u => u.Id == UserId);
+
+				if (!IsAllowed)
+				{
+					IsLoading = false;
+					return;
+				}
+
+				var card = await BingoSessionService.GetUserCardAsync(UserId, session.Id);
+				HasJoined = (card != null);
+				IsLoading = false;
+			}
+			else
+			{
+				Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}");
+			}
+		}
+	}
+	private async Task JoinSession()
+	{
+		try
+		{
+			var card = await BingoSessionService.JoinSessionAsync(UserId);
+			if (card == null)
+			{
+				ErrorMessage = "Failed to join session. Are you allowed?";
+				return;
+			}
+			HasJoined = true;
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error joining session: {ex.Message}";
+		}
+	}
+
+	private void GoToCard()
+	{
+		Nav.NavigateTo("/card");
+	}
+}

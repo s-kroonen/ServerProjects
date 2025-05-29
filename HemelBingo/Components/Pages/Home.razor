@@ -1,0 +1,80 @@
+﻿@page "/"
+@using HemelBingo.Data
+@using HemelBingo.Models
+@using HemelBingo.Services
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject UserSessionService UserSession
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<h3>Welcome to Bingo!</h3>
+
+@if (UserSession.IsLoggedIn)
+{
+	if (card != null)
+	{
+		<h4>Your Card for session: @card.Session.Name</h4>
+		<ul>
+			@foreach (var item in card.Items)
+			{
+				<li>
+					@item.Item.Name @if (item.IsMarked)
+					{
+						<strong>✔</strong>
+					}
+				</li>
+			}
+		</ul>
+	}
+	else
+	{
+		<p>You don't have a bingo card yet. <a href="/join">Join a session</a></p>
+	}
+}
+else
+{
+	<p>Please <a href="/login">login</a> to get started.</p>
+}
+
+@code {
+	User? user;
+	BingoCard? card;
+
+	protected override async Task OnInitializedAsync()
+	{
+		// await UserSession.TryRestoreSessionAsync();
+
+	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await UserSession.TryRestoreSessionAsync();
+			var user = UserSession.CurrentUser;
+			if (UserSession.IsLoggedIn)
+			{
+				this.user = await Db.Users
+					.Include(u => u.Cards)
+						.ThenInclude(c => c.Items)
+							.ThenInclude(i => i.Item)
+					.Include(u => u.Cards)
+						.ThenInclude(c => c.Session)
+					.FirstOrDefaultAsync(u => u.Name == user.Name);
+
+				card = this.user?.Cards.FirstOrDefault();
+
+			}
+			else
+			{
+				Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}");
+			}
+		}
+		else
+		{
+			// await MqttService.SubscribeToTap(TapId);
+			// Tap = await DbContext.Taps.FindAsync(tapId);
+		}
+
+	}
+}

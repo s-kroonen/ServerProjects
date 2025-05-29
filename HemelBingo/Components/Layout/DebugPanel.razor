@@ -1,0 +1,52 @@
+﻿@rendermode InteractiveServer
+@inject HemelBingo.Services.UserSessionService UserService
+
+<div style="margin-top: 1rem;">
+	<button @onclick="ToggleDebugPanel"
+			style="width: 100%; background-color: #444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+		@(showDebugPanel ? "Hide Debug" : "Show Debug")
+	</button>
+
+	@if (showDebugPanel)
+	{
+		<div style="margin-top: 0.5rem; background: #222; color: white; padding: 0.75rem; font-size: small; border-radius: 8px;">
+			<div><strong>Debug Panel</strong></div>
+			<div>session ID: @_sessionUserId</div>
+			<div>ID: @UserService.CurrentUser?.Id</div>
+			<div>User ID: @UserService.CurrentUser?.Name</div>
+			<div>Score: @UserService.CurrentUser?.Role</div>
+		</div>
+	}
+</div>
+
+@code {
+	private bool showDebugPanel;
+
+	private async void ToggleDebugPanel()
+	{
+		showDebugPanel = !showDebugPanel;
+		if (showDebugPanel)
+		{
+			var result = await UserService._sessionStorage.GetAsync<string>("userName");
+			if (result.Success)
+			{
+				await UserService.TryRestoreSessionAsync();
+				_sessionUserId = result.Value;
+			}
+		}
+	}
+	private string _sessionUserId = "";
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var result = await UserService._sessionStorage.GetAsync<string>("userName");
+			if (result.Success)
+			{
+				await UserService.TryRestoreSessionAsync();
+				_sessionUserId = result.Value;
+			}
+		}
+	}
+}

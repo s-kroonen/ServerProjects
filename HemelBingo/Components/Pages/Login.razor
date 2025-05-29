@@ -1,0 +1,127 @@
+﻿@page "/login"
+@using HemelBingo.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthProvider
+@inject UserSessionService UserSession
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>@(isRegisterMode ? "Register" : "Login")</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleSubmit">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<div class="mb-3">
+		<label class="form-label">Name</label>
+		<InputText @bind-Value="loginModel.Name" class="form-control" />
+		<ValidationMessage For="() => loginModel.Name" />
+	</div>
+
+	<div class="mb-3">
+		<label class="form-label">Password</label>
+		<InputText @bind-Value="loginModel.Password" type="password" class="form-control" />
+		<ValidationMessage For="() => loginModel.Password" />
+	</div>
+
+	@if (isRegisterMode)
+	{
+		<div class="mb-3">
+			<label class="form-label">Confirm Password</label>
+			<InputText @bind-Value="loginModel.ConfirmPassword" type="password" class="form-control" />
+			<ValidationMessage For="() => loginModel.ConfirmPassword" />
+		</div>
+	}
+
+	<button type="submit" class="btn btn-success">@((isRegisterMode ? "Register" : "Login"))</button>
+	<button type="button" class="btn btn-link" @onclick="ToggleMode">
+		@(isRegisterMode ? "Already have an account? Log in" : "Need an account? Register")
+	</button>
+</EditForm>
+
+@if (loginError)
+{
+	<div class="alert alert-danger mt-2">@errorMessage</div>
+}
+
+@code {
+	[Parameter]
+	[SupplyParameterFromQuery]
+	public string? ReturnUrl { get; set; }
+
+	private LoginModel loginModel = new();
+	private bool loginError = false;
+	private string errorMessage = string.Empty;
+	private bool isRegisterMode = false;
+	protected override async Task OnInitializedAsync()
+	{
+		var authState = await AuthProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity?.IsAuthenticated == true)
+		{
+			var name = user.Identity.Name;
+			var role = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
+		}
+	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			if (UserSession.CurrentUser != null && !string.IsNullOrEmpty(ReturnUrl))
+			{
+				NavigationManager.NavigateTo(ReturnUrl);
+			}
+		}
+	}
+
+	private async Task HandleSubmit()
+	{
+		loginError = false;
+		errorMessage = string.Empty;
+
+		if (isRegisterMode)
+		{
+			if (loginModel.Password != loginModel.ConfirmPassword)
+			{
+				loginError = true;
+				errorMessage = "PIN and Confirm PIN must match.";
+				return;
+			}
+
+			var success = await UserSession.RegisterAsync(loginModel.Name, loginModel.Password);
+			if (!success)
+			{
+				loginError = true;
+				errorMessage = "Registration failed. User may already exist.";
+				return;
+			}
+		}
+
+		var user = await UserSession.LoginAsync(loginModel.Name, loginModel.Password);
+		if (user == null)
+		{
+			loginError = true;
+			errorMessage = "Invalid credentials. Please try again.";
+			return;
+		}
+
+		NavigationManager.NavigateTo(ReturnUrl ?? "/");
+	}
+
+
+	private void ToggleMode()
+	{
+		isRegisterMode = !isRegisterMode;
+		loginError = false;
+		errorMessage = string.Empty;
+	}
+
+	public class LoginModel
+	{
+		public string Name { get; set; } = string.Empty;
+		public string? Password { get; set; }
+		public string? ConfirmPassword { get; set; }
+	}
+}

@@ -1,0 +1,45 @@
+﻿@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">HemelBingo</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="weather">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            </NavLink>
+        </div>
+        <div style="margin-top: auto; padding: 1rem;">
+            <DebugPanel />
+        </div>
+        <div class="mt-auto px-3 pb-3">
+            <button class="btn btn-danger w-100" @onclick="Logout">Logout</button>
+        </div>
+
+        @code {
+            private void Logout()
+            {
+                NavigationManager.NavigateTo("/logout", forceLoad: true);
+            }
+        }
+    </nav>
+</div>
+

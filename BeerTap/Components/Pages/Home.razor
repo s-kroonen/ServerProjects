@@ -1,7 +1,43 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home - BeerTap</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4">Welkom bij BeerTap!</h1>
+        <p class="lead">Een slimme biertapervaring voor studenten, evenementen en borrels.</p>
+    </div>
 
-Welcome to your new app.
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h3>Wat is BeerTap?</h3>
+            <p>
+                BeerTap is een interactieve webapplicatie die in real-time je bierconsumptie bijhoudt via een slimme tapinstallatie.
+                Elke gebruiker kan inloggen, een tap selecteren of scannen met een QR-code en meteen beginnen tappen.
+            </p>
+        </div>
+        <div class="col-md-6">
+            <h3>Hoe werkt het?</h3>
+            <ul>
+                <li>Gebruikers loggen in met een korte ID en optionele PIN.</li>
+                <li>Elke tap is verbonden via MQTT en registreert hoeveel bier er wordt getapt.</li>
+                <li>Scores en credits worden automatisch bijgewerkt op basis van het volume.</li>
+                <li>Beheerders kunnen gebruikers beheren, sessies starten en statistieken inzien.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4 class="card-title">Belangrijkste functionaliteiten</h4>
+            <ul>
+                <li>Real-time tapdata via MQTT</li>
+                <li>Score- en creditberekening per gebruiker</li>
+                <li>QR-code of handmatige tapselectie</li>
+                <li>Logging van sessies en gebruikersactiviteit</li>
+                <li>Beheerder- en gebruikersinterfaces</li>
+            </ul>
+        </div>
+    </div>
+</div>

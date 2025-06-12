@@ -1,6 +1,7 @@
 @page "/TapPage/{tapId:guid}"
 @using BeerTap.Models
 @inject BeerTap.Services.TapQueueManager TapQueueManager
+@inject BeerTap.Services.TapDataService TapDataService
 @inject BeerTap.Services.MqttService MqttService
 @inject BeerTap.Services.UserService UserService
 @inject NavigationManager Navigation
@@ -46,9 +47,9 @@ else
 	[Parameter]
 	public Guid tapId { get; set; }
 	public Tap Tap;
-	[Inject]
+	// [Inject]
 
-	public BeerTap.Data.BeerTapContext DbContext { get; set; } = default!;
+	// public BeerTap.Data.BeerTapContext DbContext { get; set; } = default!;
 	private float CurrentAmount = 0;
 	private string TapStatus = "idle";
 	// private string? UserId;
@@ -66,7 +67,8 @@ else
 			else
 			{
 				// await MqttService.SubscribeToTap(TapId);
-				Tap = await DbContext.Taps.FindAsync(tapId);
+				// Tap = await DbContext.Taps.FindAsync(tapId);
+				Tap = await TapDataService.GetByIdAsync(tapId);
 			}
 		}
 	}
@@ -74,7 +76,8 @@ else
 	{
 		if (UserService.IsAuthenticated)
 		{
-			Tap = await DbContext.Taps.FindAsync(tapId);
+			// Tap = await DbContext.Taps.FindAsync(tapId);
+			Tap = await TapDataService.GetByIdAsync(tapId);
 			// Load additional data for this tap if needed
 			MqttService.OnAmountUpdated += OnAmountChanged;
 			MqttService.OnStatusUpdated += OnStatusChanged;
